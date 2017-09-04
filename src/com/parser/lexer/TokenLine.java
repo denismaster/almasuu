@@ -20,4 +20,8 @@ public class TokenLine {
     public void addToken(Token token){
         this._tokens.add(token);
     }
+
+    public boolean isEmpty(){
+        return this._tokens.size()==0;
+    }
 }
