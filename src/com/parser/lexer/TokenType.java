@@ -24,10 +24,6 @@ public enum TokenType {
      */
     Command,
 
-    /**
-     * Токен - комментарий
-     */
-    Comment,
 
     /**
      * Другой тип токена
