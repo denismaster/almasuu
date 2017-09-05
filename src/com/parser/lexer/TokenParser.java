@@ -27,8 +27,7 @@ public class TokenParser {
             if(str.startsWith(this.COMMENT_START_SYMBOL)) {
                 //Если это комментарий, то дальше после него токенов не будет, это будет лишь один комментарий
                 //Поэтому ставим флаг, что надо объединять)
-                return tokenLine;
-
+                break;
             }
 
             if(Utils.isCommand(str)){
@@ -41,11 +40,22 @@ public class TokenParser {
                 continue;
             }
 
+            if(Utils.isDirective(str)){
+                tokenLine.addToken(new Token(TokenType.Directive,str));
+                continue;
+            }
+
+            if(Utils.isNumber(str)){
+                tokenLine.addToken(new Token(TokenType.Number,str));
+                continue;
+            }
+
             tokenLine.addToken(new Token(TokenType.Other, str));
         }
-        for(Token token: tokenLine.getTokens()){
-            System.out.print(String.format("{%s,\"%s\"} ",token.getTokenType().toString(),token.getValue()));
-        }
+        if(!tokenLine.getTokens().isEmpty())
+            for(Token token: tokenLine.getTokens()){
+                System.out.print(String.format("{%s,\"%s\"} ",token.getTokenType().toString(),token.getValue()));
+            }
         System.out.println();
 
         return tokenLine;

@@ -20,6 +20,11 @@ public enum TokenType {
     Name,
 
     /**
+     * Токен - число
+     */
+    Number,
+
+    /**
      * Токен - команда (mov, div, jae, test, int)
      */
     Command,
