@@ -17,6 +17,22 @@ public class TokenParser {
         return tokenLines;
     }
 
+    public TokenLine parseLine(String line) {
+        StringTokenizer st = new StringTokenizer(line, " \t\n\r,.");
+
+        TokenLine tokenLine = new TokenLine();
+        while (st.hasMoreTokens()) {
+            String str = st.nextToken();
+            tokenLine.addToken(new Token(TokenType.Other, str));
+        }
+        for(Token token: tokenLine.getTokens()){
+            System.out.print(String.format("{%s,\"%s\"} ",token.getTokenType().toString(),token.getValue()));
+        }
+        System.out.println();
+
+        return tokenLine;
+    }
+
     private List<String> loadFile(String fileName) {
         List<String> list = new ArrayList<>();
         try {
