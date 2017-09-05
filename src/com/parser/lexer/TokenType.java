@@ -24,6 +24,11 @@ public enum TokenType {
      */
     Command,
 
+    /**
+     * Токен - регистр(AX,AL и так далее)
+     */
+    Register,
+
 
     /**
      * Другой тип токена

@@ -25,4 +25,8 @@ public class Utils {
     public static boolean isCommand(String lexeme){
         return Arrays.stream(Commands).anyMatch(x->x.equalsIgnoreCase(lexeme));
     }
+
+    public static boolean isRegister(String lexeme){
+        return Arrays.stream(Registers).anyMatch(x->x.equalsIgnoreCase(lexeme));
+    }
 }
