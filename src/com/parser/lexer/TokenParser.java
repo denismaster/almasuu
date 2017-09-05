@@ -23,6 +23,14 @@ public class TokenParser {
         TokenLine tokenLine = new TokenLine();
         while (st.hasMoreTokens()) {
             String str = st.nextToken();
+
+            if(str.startsWith(this.COMMENT_START_SYMBOL)) {
+                //Если это комментарий, то дальше после него токенов не будет, это будет лишь один комментарий
+                //Поэтому ставим флаг, что надо объединять)
+                return tokenLine;
+
+            }
+
             tokenLine.addToken(new Token(TokenType.Other, str));
         }
         for(Token token: tokenLine.getTokens()){
