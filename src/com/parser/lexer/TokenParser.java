@@ -31,6 +31,16 @@ public class TokenParser {
 
             }
 
+            if(Utils.isCommand(str)){
+                tokenLine.addToken(new Token(TokenType.Command, str));
+                continue;
+            }
+
+            if(Utils.isRegister(str)){
+                tokenLine.addToken(new Token(TokenType.Register, str));
+                continue;
+            }
+
             tokenLine.addToken(new Token(TokenType.Other, str));
         }
         for(Token token: tokenLine.getTokens()){
