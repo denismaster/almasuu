@@ -1,5 +1,7 @@
 package com.parser.lexer;
 
+import java.util.*;
+
 public class Utils {
 
     public final static String[] Commands = {
@@ -19,4 +21,8 @@ public class Utils {
             "CS","DS","ES","SS",
             "IP"
     };
+
+    public static boolean isCommand(String lexeme){
+        return Arrays.stream(Commands).anyMatch(x->x.equalsIgnoreCase(lexeme));
+    }
 }
