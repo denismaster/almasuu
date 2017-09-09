@@ -11,7 +11,7 @@ public class TokenParser {
     private final List<String> _labels = new ArrayList<String>();
     private final List<String> _errors = new ArrayList<String>();
 
-    public List<TokenLine> parse(String fileName) {
+    public TokenParsingResult parse(String fileName) {
         List<TokenLine> tokenLines = new ArrayList<>();
         List<String> input = this.loadFile(fileName);
         TokenParsingResult result = new TokenParsingResult();
@@ -56,17 +56,21 @@ public class TokenParser {
             }
 
         }
-
-        return tokenLines;
+        result.tokenLines = tokenLines;
+        return result;
     }
 
     public TokenLine parseLine(String line) {
         StringTokenizer st = new StringTokenizer(line, " \t\n\r,.");
 
         TokenLine tokenLine = new TokenLine();
-        while (st.hasMoreTokens()) {
-            String str = st.nextToken();
+        List<String> stringTokens  = new ArrayList<>();
 
+        while (st.hasMoreTokens()) {
+            stringTokens.add(st.nextToken());
+        }
+        for(String str: stringTokens)
+        {
             if(str.startsWith(this.COMMENT_START_SYMBOL)) {
                 //Если это комментарий, то дальше после него токенов не будет, это будет лишь один комментарий
                 //Поэтому ставим флаг, что надо объединять)

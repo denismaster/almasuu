@@ -29,7 +29,11 @@ public class Utils {
     };
 
     public static boolean isCommand(String lexeme){
-        return Arrays.stream(Commands).anyMatch(x->x.equalsIgnoreCase(lexeme));
+        for(String command: Commands){
+            if(command.equalsIgnoreCase(lexeme))
+                return true;
+        }
+        return false;
     }
 
     public static boolean isRegister(String lexeme){
