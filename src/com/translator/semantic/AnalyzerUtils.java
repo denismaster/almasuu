@@ -8,4 +8,8 @@ public class AnalyzerUtils {
         }
         return register;
     }
+
+    public static String byteToString(byte value){
+        return String.format("%8s", Integer.toBinaryString(value & 0xFF)).replace(' ', '0');
+    }
 }
