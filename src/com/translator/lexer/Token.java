@@ -1,4 +1,4 @@
-package com.parser.lexer;
+package com.translator.lexer;
 
 /**
  * Токен. Кусок входной строки, имеющий лексическое значение. При трансляции на первом проходе мы получаем набор этих токенов.
@@ -16,6 +16,10 @@ public class Token {
 
     public TokenType getTokenType(){
         return this._tokenType;
+    }
+
+    public void setTokenType(TokenType type){
+        this._tokenType = type;
     }
 
     public String getValue(){

@@ -1,6 +1,6 @@
-package com.parser;
+package com.translator;
 
-import com.parser.lexer.TokenParser;
+import com.translator.lexer.TokenParser;
 
 public class Main {
 

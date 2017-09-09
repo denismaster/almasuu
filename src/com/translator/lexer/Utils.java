@@ -1,7 +1,6 @@
-package com.parser.lexer;
+package com.translator.lexer;
 
 import java.util.*;
-import java.util.regex.Pattern;
 
 public class Utils {
 
@@ -43,5 +42,9 @@ public class Utils {
 
     public static boolean isNumber(String lexeme){
         return lexeme.trim().matches("[0-9a-fA-F]+");
+    }
+
+    public static boolean isLabel(String lexeme){
+        return lexeme.trim().matches("^\\w+:$");
     }
 }
