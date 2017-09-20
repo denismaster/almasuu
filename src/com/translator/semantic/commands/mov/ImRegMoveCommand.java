@@ -1,6 +1,9 @@
-package com.translator.semantic;
+package com.translator.semantic.commands.mov;
 
-public class ImRegMoveCommand {
+import com.translator.semantic.AnalyzerUtils;
+import com.translator.semantic.commands.Command;
+
+public class ImRegMoveCommand implements Command {
     public String register;
     public int value;
     public boolean isWide;
