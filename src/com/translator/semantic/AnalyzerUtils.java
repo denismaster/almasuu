@@ -3,8 +3,32 @@ package com.translator.semantic;
 public class AnalyzerUtils {
     public static String getRegisterCode(String register){
         switch(register) {
+
+            //16-бит
             case "AX": return "000";
+            case "CX": return "001";
+            case "DX": return "010";
+            case "BX": return "011";
+            case "SP": return "100";
+            case "BP": return "101";
+            case "SI": return "110";
+            case "DI": return "111";
+
+            //8-бит
+            case "AL": return "000";
+            case "CL": return "001";
+            case "DL": return "010";
+            case "BL": return "011";
             case "AH": return "100";
+            case "CH": return "101";
+            case "DH": return "110";
+            case "BH": return "111";
+
+            //сегменты
+            case "ES": return "00";
+            case "CS": return "01";
+            case "SS": return "10";
+            case "DS": return "11";
         }
         return register;
     }
