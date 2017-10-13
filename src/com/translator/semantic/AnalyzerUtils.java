@@ -1,5 +1,7 @@
 package com.translator.semantic;
 
+import java.util.Arrays;
+
 public class AnalyzerUtils {
     public static String getRegisterCode(String register){
         switch(register) {
@@ -33,6 +35,14 @@ public class AnalyzerUtils {
         return register;
     }
 
+    public static boolean isWideRegister(String register){
+        String[] registers = {
+              "AX","CX","DX","BX","SP","BP","SI","DI"
+        };
+
+        return Arrays.stream(registers).anyMatch(x->x.equalsIgnoreCase(register));
+    }
+
 
     public static String getLHValueFromInt(int in){
         byte[] data = new byte[2]; // <- assuming "in" value in 0..65535 range and we can use 2 bytes only
@@ -52,5 +62,15 @@ public class AnalyzerUtils {
 
     public static String byteToString(byte value){
         return String.format("%8s", Integer.toBinaryString(value & 0xFF)).replace(' ', '0');
+    }
+
+    public static String getModValue(ModeType mod){
+        switch(mod) {
+
+            //16-бит
+            case RegisterAddressing: return "11";
+
+        }
+        return "";
     }
 }
