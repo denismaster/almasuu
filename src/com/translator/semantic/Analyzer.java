@@ -90,4 +90,14 @@ public class Analyzer {
         if(token.getTokenType()!= TokenType.Command) return false;
         return token.getValue().equalsIgnoreCase("TEST");
     }
+
+    public boolean isJaeCommand(Token token){
+        if(token.getTokenType()!= TokenType.Command) return false;
+        return token.getValue().equalsIgnoreCase("JAE");
+    }
+
+    public boolean isDivCommand(Token token){
+        if(token.getTokenType()!= TokenType.Command) return false;
+        return token.getValue().equalsIgnoreCase("DIV");
+    }
 }
