@@ -6,6 +6,7 @@ import com.translator.lexer.TokenLine;
 import com.translator.lexer.TokenParsingResult;
 import com.translator.lexer.TokenType;
 import com.translator.semantic.commands.Command;
+import com.translator.semantic.commands.div.DivCommand;
 import com.translator.semantic.commands.mov.ImRegMoveCommand;
 import com.translator.semantic.commands.test.ImDataAccTestCommand;
 import com.translator.semantic.commands.test.RegMemRegisterTestCommand;
@@ -23,6 +24,9 @@ public class Analyzer {
                 }
                 if(isTestCommand(token)){
                     i = processTestCommands(tokenLine, i);
+                }
+                if(isDivCommand(token)){
+                    i = processDivCommands(tokenLine, i);
                 }
                 i++;
             }
@@ -76,6 +80,29 @@ public class Analyzer {
             int value = Integer.parseInt(firstOperand.getValue(), 16);
             Command command = new ImDataAccTestCommand(value, value > 256);
             System.out.print(command.generateCode() + " ");
+        }
+        System.out.println();
+        return i;
+    }
+
+    private int processDivCommands(TokenLine tokenLine, int i) {
+        //Если больше токенов нет, то выдаем ошибку
+        if(i==tokenLine.getTokens().size()-1){
+            System.out.println("Не хватает операндов!");
+        }
+        Token firstOperand = tokenLine.getTokens().get(++i);
+        if(firstOperand.getTokenType()== TokenType.Register){
+            if(i==tokenLine.getTokens().size()-1){
+                System.out.println("Не хватает операндов!");
+            }
+            Token secondOperand = tokenLine.getTokens().get(++i);
+
+            if(secondOperand.getTokenType()==TokenType.Register){
+                boolean isWide = AnalyzerUtils.isWideRegister(firstOperand.getValue());
+                Command command = new DivCommand(isWide,
+                        firstOperand.getValue(), ModeType.RegisterAddressing);
+                System.out.print(command.generateCode() + " ");
+            }
         }
         System.out.println();
         return i;
