@@ -5,6 +5,6 @@ import com.translator.semantic.commands.Command;
 public class JaeCommand implements Command {
     @Override
     public String generateCode() {
-        return null;
+        return "01110011";
     }
 }
