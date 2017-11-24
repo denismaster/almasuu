@@ -1,7 +1,9 @@
 package com.translator.semantic.commands;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CodeSegment implements CodeGeneratable{
     private int displacementInBytes;
@@ -19,5 +21,16 @@ public class CodeSegment implements CodeGeneratable{
             builder.append(" ");
         }
         return builder.toString();
+    }
+
+    public Map<String, Integer> labelsOffsets = new HashMap<String,Integer>();
+
+    public int getSize()  {
+        int currentSize = 0;
+        for(Command command: commands)
+        {
+            currentSize+=command.getSize();
+        }
+        return currentSize;
     }
 }

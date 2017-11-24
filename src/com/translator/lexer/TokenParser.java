@@ -18,16 +18,24 @@ public class TokenParser {
         for (String line : input) {
             tokenLines.add(this.parseLine(line));
         }
+
+
         // определяем метки
         for(TokenLine tokenLine: tokenLines)
         {
             for(Token token: tokenLine.getTokens()) {
                 if (token.getTokenType() == TokenType.Other && Utils.isLabel(token.getValue())) {
                     token.setTokenType(TokenType.Label);
-                    _labels.add(token.getValue().substring(0, token.getValue().length() - 1));
+                    String labelName = token.getValue();
+                    labelName = labelName.substring(0, labelName.length()-1);
+                    _labels.add(labelName);
+                    token.setValue(labelName);
                 }
             }
         }
+
+        result.labels = _labels;
+
         // определяем имена переменных
         for(TokenLine tokenLine: tokenLines)
         {
@@ -41,22 +49,27 @@ public class TokenParser {
                 }
                 }
                 if(token.getTokenType()==TokenType.Other
-                        && (_labels.contains(token.getValue()) || result.segments.contains(token.getValue()))){
+                        && (result.labels.contains(token.getValue()) || result.segments.contains(token.getValue()))){
                     token.setTokenType(TokenType.Name);
+                    result.names.add(token.getValue());
                 }
             }
         }
-        for(TokenLine tokenLine: tokenLines){
-            if(!tokenLine.getTokens().isEmpty())
-            {
-                for(Token token: tokenLine.getTokens()){
-                    System.out.print(String.format("{%s,\"%s\"} ",token.getTokenType().toString(),token.getValue()));
-                }
-                System.out.println();
-            }
+        List<Token> tokens = new ArrayList<>();
 
+        for(TokenLine tokenLine: tokenLines)
+        {
+            tokens.addAll(tokenLine.getTokens());
         }
-        result.tokenLines = tokenLines;
+
+        Boolean hasOtherTokens = tokens.stream().anyMatch(token->token.getTokenType()==TokenType.Other);
+
+        if(hasOtherTokens)
+        {
+            System.out.println("Неизвестная инструкция");
+        }
+
+        result.tokens = tokens;
         return result;
     }
 
@@ -71,6 +84,8 @@ public class TokenParser {
         }
         for(String str: stringTokens)
         {
+            str = str.replaceAll("[\uFEFF-\uFFFF]", "");
+
             if(str.startsWith(this.COMMENT_START_SYMBOL)) {
                 //Если это комментарий, то дальше после него токенов не будет, это будет лишь один комментарий
                 //Поэтому ставим флаг, что надо объединять)

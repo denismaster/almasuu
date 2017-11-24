@@ -30,7 +30,8 @@ public class Main {
             analyzer.analyze(parser.parse(inputFileName));
         } catch (Exception ex)
         {
-            System.out.println("Возникла ошибка в результате трансляции:"+ex.getMessage());
+            System.out.println("Возникла ошибка в результате трансляции:");
+            ex.printStackTrace();
         }
         finally {
             System.out.println("Трансляция завершена.");

@@ -25,4 +25,8 @@ public class Token {
     public String getValue(){
         return this._value;
     }
+
+    public void setValue(String newValue){
+        this._value = newValue;
+    }
 }

@@ -1,55 +1,66 @@
 package com.translator.semantic;
 
-import com.sun.org.apache.xpath.internal.operations.Mod;
 import com.translator.lexer.Token;
-import com.translator.lexer.TokenLine;
 import com.translator.lexer.TokenParsingResult;
 import com.translator.lexer.TokenType;
+import com.translator.semantic.commands.CodeSegment;
 import com.translator.semantic.commands.Command;
 import com.translator.semantic.commands.div.DivCommand;
+import com.translator.semantic.commands.jae.JaeCommand;
 import com.translator.semantic.commands.mov.ImRegMoveCommand;
 import com.translator.semantic.commands.test.ImDataAccTestCommand;
 import com.translator.semantic.commands.test.RegMemRegisterTestCommand;
 
-public class Analyzer {
+import java.util.List;
 
-    public void analyze(TokenParsingResult result){
+public class Analyzer {
+    CodeSegment currentSegment = new CodeSegment(0);
+
+    public void analyze(TokenParsingResult result) {
         System.out.println();
         System.out.println();
-        for(TokenLine tokenLine: result.tokenLines){
-            for(int i=0;i<tokenLine.getTokens().size();){
-                Token token =  tokenLine.getTokens().get(i);
-                if(isMoveCommand(token)){
-                    i = processMovCommands(tokenLine, i);
-                }
-                if(isTestCommand(token)){
-                    i = processTestCommands(tokenLine, i);
-                }
-                if(isDivCommand(token)){
-                    i = processDivCommands(tokenLine, i);
-                }
-                i++;
+        List<Token> tokens = result.tokens;
+
+        for (int i = 0; i < tokens.size(); ) {
+            Token token = tokens.get(i);
+            if (isLabel(token)) {
+                String labelName = token.getValue();
+                currentSegment.labelsOffsets.put(labelName, currentSegment.getSize());
             }
+            if (isMoveCommand(token)) {
+                i = processMovCommands(tokens, i);
+            }
+            if (isTestCommand(token)) {
+                i = processTestCommands(tokens, i);
+            }
+            if (isDivCommand(token)) {
+                i = processDivCommands(tokens, i);
+            }
+            if (isJaeCommand(token)) {
+                i = processJaeCommands(tokens, i, result.labels);
+            }
+            i++;
         }
     }
 
-    private int processMovCommands(TokenLine tokenLine, int i) {
+    private int processMovCommands(List<Token> tokens, int i) {
         //Если больше токенов нет, то выдаем ошибку
-        if(i==tokenLine.getTokens().size()-1){
+        if (i == tokens.size() - 1) {
             System.out.println("Не хватает операндов!");
         }
-        Token firstOperand = tokenLine.getTokens().get(++i);
-        if(firstOperand.getTokenType()== TokenType.Register){
-            if(i==tokenLine.getTokens().size()-1){
+        Token firstOperand = tokens.get(++i);
+        if (firstOperand.getTokenType() == TokenType.Register) {
+            if (i == tokens.size() - 1) {
                 System.out.println("Не хватает операндов!");
             }
-            Token secondOperand = tokenLine.getTokens().get(++i);
-            if(secondOperand.getTokenType()==TokenType.Number) {
+            Token secondOperand = tokens.get(++i);
+            if (secondOperand.getTokenType() == TokenType.Number) {
                 int value = Integer.parseInt(secondOperand.getValue(), 16);
                 Command command = new ImRegMoveCommand(firstOperand.getValue(), value, value > 256);
+                currentSegment.commands.add(command);
                 System.out.print(command.generateCode() + " ");
             }
-            if(secondOperand.getTokenType()==TokenType.Register){
+            if (secondOperand.getTokenType() == TokenType.Register) {
 
             }
         }
@@ -57,74 +68,105 @@ public class Analyzer {
         return i;
     }
 
-    private int processTestCommands(TokenLine tokenLine, int i) {
+    private int processTestCommands(List<Token> tokens, int i) {
         //Если больше токенов нет, то выдаем ошибку
-        if(i==tokenLine.getTokens().size()-1){
+        if (i == tokens.size() - 1) {
             System.out.println("Не хватает операндов!");
         }
-        Token firstOperand = tokenLine.getTokens().get(++i);
-        if(firstOperand.getTokenType()== TokenType.Register){
-            if(i==tokenLine.getTokens().size()-1){
+        Token firstOperand = tokens.get(++i);
+        if (firstOperand.getTokenType() == TokenType.Register) {
+            if (i == tokens.size() - 1) {
                 System.out.println("Не хватает операндов!");
             }
-            Token secondOperand = tokenLine.getTokens().get(++i);
+            Token secondOperand = tokens.get(++i);
 
-            if(secondOperand.getTokenType()==TokenType.Register){
+            if (secondOperand.getTokenType() == TokenType.Register) {
                 boolean isWide = AnalyzerUtils.isWideRegister(firstOperand.getValue());
                 Command command = new RegMemRegisterTestCommand(firstOperand.getValue(),
-                        secondOperand.getValue(),isWide, ModeType.RegisterAddressing );
+                        secondOperand.getValue(), isWide, ModeType.RegisterAddressing);
                 System.out.print(command.generateCode() + " ");
+                currentSegment.commands.add(command);
             }
         }
-        if(firstOperand.getTokenType()==TokenType.Number) {
+        if (firstOperand.getTokenType() == TokenType.Number) {
             int value = Integer.parseInt(firstOperand.getValue(), 16);
             Command command = new ImDataAccTestCommand(value, value > 256);
             System.out.print(command.generateCode() + " ");
+            currentSegment.commands.add(command);
         }
         System.out.println();
         return i;
     }
 
-    private int processDivCommands(TokenLine tokenLine, int i) {
+    private int processDivCommands(List<Token> tokens, int i) {
         //Если больше токенов нет, то выдаем ошибку
-        if(i==tokenLine.getTokens().size()-1){
+        if (i == tokens.size() - 1) {
             System.out.println("Не хватает операндов!");
         }
-        Token firstOperand = tokenLine.getTokens().get(++i);
-        if(firstOperand.getTokenType()== TokenType.Register){
-            if(i==tokenLine.getTokens().size()-1){
+        Token firstOperand = tokens.get(++i);
+        if (firstOperand.getTokenType() == TokenType.Register) {
+            if (i == tokens.size() - 1) {
                 System.out.println("Не хватает операндов!");
             }
-            Token secondOperand = tokenLine.getTokens().get(++i);
+            Token secondOperand = tokens.get(++i);
 
-            if(secondOperand.getTokenType()==TokenType.Register){
+            if (secondOperand.getTokenType() == TokenType.Register) {
                 boolean isWide = AnalyzerUtils.isWideRegister(firstOperand.getValue());
                 Command command = new DivCommand(isWide,
                         firstOperand.getValue(), ModeType.RegisterAddressing);
                 System.out.print(command.generateCode() + " ");
+                currentSegment.commands.add(command);
             }
         }
         System.out.println();
         return i;
     }
 
-    public boolean isMoveCommand(Token token){
-        if(token.getTokenType()!= TokenType.Command) return false;
+    private int processJaeCommands(List<Token> tokens, int i, List<String> labels) {
+        //Если больше токенов нет, то выдаем ошибку
+        if (i == tokens.size() - 1) {
+            System.out.println("Не хватает операндов!");
+        }
+        Token firstOperand = tokens.get(++i);
+        if (firstOperand.getTokenType() == TokenType.Name) {
+            if (!labels.contains(firstOperand.getValue()))
+            {
+                System.out.println("Метка не определена");
+            }
+            String labelName = firstOperand.getValue();
+            Command command = new JaeCommand(currentSegment.labelsOffsets.get(labelName));
+            currentSegment.commands.add(command);
+            System.out.print(command.generateCode() + " ");
+        }else
+        {
+            System.out.println("Операнды не совпадают");
+        }
+        System.out.println();
+        return i;
+    }
+
+
+    public boolean isMoveCommand(Token token) {
+        if (token.getTokenType() != TokenType.Command) return false;
         return token.getValue().equalsIgnoreCase("MOV");
     }
 
-    public boolean isTestCommand(Token token){
-        if(token.getTokenType()!= TokenType.Command) return false;
+    public boolean isTestCommand(Token token) {
+        if (token.getTokenType() != TokenType.Command) return false;
         return token.getValue().equalsIgnoreCase("TEST");
     }
 
-    public boolean isJaeCommand(Token token){
-        if(token.getTokenType()!= TokenType.Command) return false;
+    public boolean isJaeCommand(Token token) {
+        if (token.getTokenType() != TokenType.Command) return false;
         return token.getValue().equalsIgnoreCase("JAE");
     }
 
-    public boolean isDivCommand(Token token){
-        if(token.getTokenType()!= TokenType.Command) return false;
+    public boolean isDivCommand(Token token) {
+        if (token.getTokenType() != TokenType.Command) return false;
         return token.getValue().equalsIgnoreCase("DIV");
+    }
+
+    public boolean isLabel(Token token) {
+        return token.getTokenType()==TokenType.Label;
     }
 }

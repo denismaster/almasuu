@@ -20,6 +20,6 @@ public class ImDataAccTestCommand implements Command {
 
     @Override
     public int getSize() {
-        return 0;
+        return isWide ? 3:2;
     }
 }
