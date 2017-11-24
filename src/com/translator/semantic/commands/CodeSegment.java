@@ -14,6 +14,11 @@ public class CodeSegment implements CodeGeneratable{
         this.commands = new ArrayList<Command>();
     }
 
+    public void add(Command c){
+        if(c==null) throw new IllegalArgumentException();
+        commands.add(c);
+    }
+
     public String generateCode(){
         StringBuilder builder  = new StringBuilder();
         for(Command c: commands){
