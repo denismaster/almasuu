@@ -25,4 +25,9 @@ public class RegMemRegisterTestCommand implements Command {
                 + AnalyzerUtils.getRegisterCode(register2.toUpperCase());
         return opCode+" "+rmByte;
     }
+
+    @Override
+    public int getSize() {
+        return 2;
+    }
 }

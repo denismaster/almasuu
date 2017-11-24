@@ -7,4 +7,9 @@ public class JaeCommand implements Command {
     public String generateCode() {
         return null;
     }
+
+    @Override
+    public int getSize() {
+        return 3;
+    }
 }

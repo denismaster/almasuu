@@ -16,11 +16,16 @@ public class DivCommand implements Command {
     }
     @Override
     public String generateCode() {
-        String opCode =  "1111011" + (isWide ? "1":"0");
-        String paramByte =
+        String opCode =  "1111011" + (isWide ? "1":"0"); //1 байт
+        String paramByte = // второй байт
                 AnalyzerUtils.getModValue(this.mod)
                 +"110"
                 + AnalyzerUtils.getRegisterCode(register.toUpperCase());
         return opCode+ " "+ paramByte;
+    }
+
+    @Override
+    public int getSize() {
+        return 2;
     }
 }

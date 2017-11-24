@@ -17,4 +17,9 @@ public class ImDataAccTestCommand implements Command {
         result = result + " " + AnalyzerUtils.getLHValueFromInt(this.value);
         return result;
     }
+
+    @Override
+    public int getSize() {
+        return 0;
+    }
 }
