@@ -18,7 +18,7 @@ public class CodeSegment implements CodeGeneratable{
         StringBuilder builder  = new StringBuilder();
         for(Command c: commands){
             builder.append(c.generateCode());
-            builder.append(" ");
+            builder.append("\n");
         }
         return builder.toString();
     }

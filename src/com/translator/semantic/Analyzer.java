@@ -16,7 +16,7 @@ import java.util.List;
 public class Analyzer {
     CodeSegment currentSegment = new CodeSegment(0);
 
-    public void analyze(TokenParsingResult result) {
+    public CodeSegment analyze(TokenParsingResult result) {
         System.out.println();
         System.out.println();
         List<Token> tokens = result.tokens;
@@ -41,6 +41,8 @@ public class Analyzer {
             }
             i++;
         }
+
+        return currentSegment;
     }
 
     private int processMovCommands(List<Token> tokens, int i) {

@@ -2,6 +2,8 @@ package com.translator;
 
 import com.translator.lexer.TokenParser;
 import com.translator.semantic.Analyzer;
+import com.translator.semantic.commands.CodeSegment;
+import com.translator.writer.Writer;
 
 import java.io.File;
 import java.util.Scanner;
@@ -27,7 +29,11 @@ public class Main {
 
             System.out.println("Семантический анализ");
             Analyzer analyzer = new Analyzer();
-            analyzer.analyze(parser.parse(inputFileName));
+            CodeSegment segment = analyzer.analyze(parser.parse(inputFileName));
+
+            System.out.println("Генерация листинга и объектного кода");
+            Writer writer = new Writer();
+            writer.generateOutputFiles(inputFileName,segment);
         } catch (Exception ex)
         {
             System.out.println("Возникла ошибка в результате трансляции:");
