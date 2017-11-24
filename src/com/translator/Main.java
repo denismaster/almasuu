@@ -16,15 +16,25 @@ public class Main {
         String inputFileName = cin.nextLine();
 
         File f = new File(inputFileName);
-        if(!f.exists() || f.isDirectory()) {
+        if (!f.exists() || f.isDirectory()) {
             System.out.println("Некорректное имя файла. Работа транслятора будет завершена");
             return;
         }
 
-        System.out.println("Парсинг входного файла...");
-        TokenParser parser = new TokenParser();
+        try {
+            System.out.println("Парсинг входного файла...");
+            TokenParser parser = new TokenParser();
 
-        Analyzer analyzer = new Analyzer();
-        analyzer.analyze(parser.parse(inputFileName));
+            System.out.println("Семантический анализ");
+            Analyzer analyzer = new Analyzer();
+            analyzer.analyze(parser.parse(inputFileName));
+        } catch (Exception ex)
+        {
+            System.out.println("Возникла ошибка в результате трансляции:"+ex.getMessage());
+        }
+        finally {
+            System.out.println("Трансляция завершена.");
+        }
+
     }
 }
