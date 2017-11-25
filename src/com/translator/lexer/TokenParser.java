@@ -66,7 +66,7 @@ public class TokenParser {
 
         if(hasOtherTokens)
         {
-            System.out.println("Неизвестная инструкция");
+            result.errors.add("Неизвестная инструкция");
         }
 
         result.tokens = tokens;

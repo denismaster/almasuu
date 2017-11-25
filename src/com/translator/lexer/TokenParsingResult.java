@@ -10,5 +10,4 @@ public class TokenParsingResult {
     public List<String> names = new ArrayList<>();
 
     public List<String> errors = new ArrayList<>();
-    public List<String> warnings = new ArrayList<>();
 }

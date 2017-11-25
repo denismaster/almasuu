@@ -17,8 +17,6 @@ public class Analyzer {
     CodeSegment currentSegment = new CodeSegment(0);
 
     public CodeSegment analyze(TokenParsingResult result) {
-        System.out.println();
-        System.out.println();
         List<Token> tokens = result.tokens;
 
         for (int i = 0; i < tokens.size(); ) {
@@ -60,13 +58,11 @@ public class Analyzer {
                 int value = Integer.parseInt(secondOperand.getValue(), 16);
                 Command command = new ImRegMoveCommand(firstOperand.getValue(), value, value > 256);
                 currentSegment.commands.add(command);
-                System.out.print(command.generateCode() + " ");
             }
             if (secondOperand.getTokenType() == TokenType.Register) {
 
             }
         }
-        System.out.println();
         return i;
     }
 
@@ -86,17 +82,14 @@ public class Analyzer {
                 boolean isWide = AnalyzerUtils.isWideRegister(firstOperand.getValue());
                 Command command = new RegMemRegisterTestCommand(firstOperand.getValue(),
                         secondOperand.getValue(), isWide, ModeType.RegisterAddressing);
-                System.out.print(command.generateCode() + " ");
                 currentSegment.commands.add(command);
             }
         }
         if (firstOperand.getTokenType() == TokenType.Number) {
             int value = Integer.parseInt(firstOperand.getValue(), 16);
             Command command = new ImDataAccTestCommand(value, value > 256);
-            System.out.print(command.generateCode() + " ");
             currentSegment.commands.add(command);
         }
-        System.out.println();
         return i;
     }
 
@@ -116,11 +109,9 @@ public class Analyzer {
                 boolean isWide = AnalyzerUtils.isWideRegister(firstOperand.getValue());
                 Command command = new DivCommand(isWide,
                         firstOperand.getValue(), ModeType.RegisterAddressing);
-                System.out.print(command.generateCode() + " ");
                 currentSegment.commands.add(command);
             }
         }
-        System.out.println();
         return i;
     }
 
@@ -138,12 +129,10 @@ public class Analyzer {
             String labelName = firstOperand.getValue();
             Command command = new JaeCommand(currentSegment.labelsOffsets.get(labelName));
             currentSegment.commands.add(command);
-            System.out.print(command.generateCode() + " ");
         }else
         {
             System.out.println("Операнды не совпадают");
         }
-        System.out.println();
         return i;
     }
 
