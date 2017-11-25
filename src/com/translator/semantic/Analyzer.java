@@ -100,17 +100,10 @@ public class Analyzer {
         }
         Token firstOperand = tokens.get(++i);
         if (firstOperand.getTokenType() == TokenType.Register) {
-            if (i == tokens.size() - 1) {
-                System.out.println("Не хватает операндов!");
-            }
-            Token secondOperand = tokens.get(++i);
-
-            if (secondOperand.getTokenType() == TokenType.Register) {
-                boolean isWide = AnalyzerUtils.isWideRegister(firstOperand.getValue());
-                Command command = new DivCommand(isWide,
-                        firstOperand.getValue(), ModeType.RegisterAddressing);
-                currentSegment.commands.add(command);
-            }
+            boolean isWide = AnalyzerUtils.isWideRegister(firstOperand.getValue());
+            Command command = new DivCommand(isWide,
+                    firstOperand.getValue(), ModeType.RegisterAddressing);
+            currentSegment.commands.add(command);
         }
         return i;
     }
