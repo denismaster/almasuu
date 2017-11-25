@@ -14,9 +14,9 @@ import com.translator.semantic.commands.test.RegMemRegisterTestCommand;
 import java.util.List;
 
 public class Analyzer {
-    CodeSegment currentSegment = new CodeSegment(0);
-
-    public CodeSegment analyze(TokenParsingResult result) {
+    AnalyzeResult result = new AnalyzeResult();
+    CodeSegment currentSegment = result.codeSegment;
+    public AnalyzeResult analyze(TokenParsingResult result) {
         List<Token> tokens = result.tokens;
 
         for (int i = 0; i < tokens.size(); ) {
@@ -40,18 +40,18 @@ public class Analyzer {
             i++;
         }
 
-        return currentSegment;
+        return this.result;
     }
 
     private int processMovCommands(List<Token> tokens, int i) {
         //Если больше токенов нет, то выдаем ошибку
         if (i == tokens.size() - 1) {
-            System.out.println("Не хватает операндов!");
+            result.errors.add("Не хватает операндов!");
         }
         Token firstOperand = tokens.get(++i);
         if (firstOperand.getTokenType() == TokenType.Register) {
             if (i == tokens.size() - 1) {
-                System.out.println("Не хватает операндов!");
+                result.errors.add("Не хватает операндов!");
             }
             Token secondOperand = tokens.get(++i);
             if (secondOperand.getTokenType() == TokenType.Number) {
@@ -69,12 +69,12 @@ public class Analyzer {
     private int processTestCommands(List<Token> tokens, int i) {
         //Если больше токенов нет, то выдаем ошибку
         if (i == tokens.size() - 1) {
-            System.out.println("Не хватает операндов!");
+            result.errors.add("Не хватает операндов!");
         }
         Token firstOperand = tokens.get(++i);
         if (firstOperand.getTokenType() == TokenType.Register) {
             if (i == tokens.size() - 1) {
-                System.out.println("Не хватает операндов!");
+                result.errors.add("Не хватает операндов!");
             }
             Token secondOperand = tokens.get(++i);
 
@@ -96,7 +96,7 @@ public class Analyzer {
     private int processDivCommands(List<Token> tokens, int i) {
         //Если больше токенов нет, то выдаем ошибку
         if (i == tokens.size() - 1) {
-            System.out.println("Не хватает операндов!");
+            result.errors.add("Не хватает операндов!");
         }
         Token firstOperand = tokens.get(++i);
         if (firstOperand.getTokenType() == TokenType.Register) {
@@ -104,6 +104,9 @@ public class Analyzer {
             Command command = new DivCommand(isWide,
                     firstOperand.getValue(), ModeType.RegisterAddressing);
             currentSegment.commands.add(command);
+        }else
+        {
+            result.errors.add("Операнды не совпадают");
         }
         return i;
     }
@@ -111,20 +114,20 @@ public class Analyzer {
     private int processJaeCommands(List<Token> tokens, int i, List<String> labels) {
         //Если больше токенов нет, то выдаем ошибку
         if (i == tokens.size() - 1) {
-            System.out.println("Не хватает операндов!");
+            result.errors.add("Не хватает операндов!");
         }
         Token firstOperand = tokens.get(++i);
         if (firstOperand.getTokenType() == TokenType.Name) {
             if (!labels.contains(firstOperand.getValue()))
             {
-                System.out.println("Метка не определена");
+                result.errors.add("Метка не определена");
             }
             String labelName = firstOperand.getValue();
             Command command = new JaeCommand(currentSegment.labelsOffsets.get(labelName));
             currentSegment.commands.add(command);
         }else
         {
-            System.out.println("Операнды не совпадают");
+            result.errors.add("Операнды не совпадают");
         }
         return i;
     }

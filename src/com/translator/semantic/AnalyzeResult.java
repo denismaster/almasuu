@@ -7,5 +7,9 @@ import java.util.List;
 
 public class AnalyzeResult {
     public List<String> errors = new ArrayList<>();
-    public CodeSegment codeSegment;
+    public CodeSegment codeSegment = new CodeSegment(0);
+
+    public boolean hasErrors(){
+        return errors.size()>0;
+    }
 }
