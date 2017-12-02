@@ -102,6 +102,11 @@ public class TokenParser {
                 continue;
             }
 
+            if(Utils.isIndirectAddressingRegister(str)){
+                tokenLine.addToken(new Token(TokenType.IndirectAddress, str));
+                continue;
+            }
+
             if(Utils.isDirective(str)){
                 tokenLine.addToken(new Token(TokenType.Directive,str));
                 continue;

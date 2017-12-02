@@ -34,6 +34,10 @@ public enum TokenType {
      */
     Register,
 
+    /**
+     * Токен - регистр косвенной адресации [BX], [BP]
+     */
+    IndirectAddress,
 
     /**
      * Другой тип токена
