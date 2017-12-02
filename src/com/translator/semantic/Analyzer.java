@@ -85,10 +85,9 @@ public class Analyzer {
                 currentSegment.commands.add(command);
             }
         }
-        if (firstOperand.getTokenType() == TokenType.Number) {
-            int value = Integer.parseInt(firstOperand.getValue(), 16);
-            Command command = new ImDataAccTestCommand(value, value > 256);
-            currentSegment.commands.add(command);
+        else
+        {
+            result.errors.add("Операнды не совпадают");
         }
         return i;
     }
