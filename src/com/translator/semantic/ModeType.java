@@ -2,7 +2,7 @@ package com.translator.semantic;
 
 public enum ModeType {
     RegisterIndirect,
-    OneByte,
-    FourByte,
+    OneByte, //not used
+    FourByte, //not used
     RegisterAddressing
 }

@@ -25,7 +25,16 @@ public class Writer {
     private String generateListing(AnalyzeResult analyzeResult){
         StringBuilder builder = new StringBuilder();
         builder.append("almasuu - А.Рябцева (с) 2017\n");
-        builder.append("\n\n\n");
+        builder.append("\n\n");
+        if(analyzeResult.parsingResult.errors.size()>0)
+        {
+            builder.append("В ходе парсинга обнаружены ошибки:\n");
+            for (String error :
+                    analyzeResult.parsingResult.errors) {
+                builder.append(error+"\n");
+            }
+        }
+        builder.append("\n");
         int i=0;
         for(String sourceLine: analyzeResult.parsingResult.sourceLines)
         {

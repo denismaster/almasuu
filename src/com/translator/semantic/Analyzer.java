@@ -24,6 +24,11 @@ public class Analyzer {
         List<Token> tokens = parsingResult.tokens;
         result.parsingResult = parsingResult;
 
+        if(parsingResult.errors.size()>0)
+        {
+            return result;
+        }
+
         for (int i = 0; i < tokens.size(); ) {
             Token token = tokens.get(i);
             if(i<tokens.size() && token.getTokenType()==TokenType.Name && tokens.get(i).getTokenType()==TokenType.Directive)

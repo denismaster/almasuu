@@ -7,6 +7,7 @@ package com.translator.lexer;
 public class Token {
     private TokenType _tokenType; // тип токена
     private String _value; // значение токена
+    public TokenLine tokenLine;
 
     //Конструктор токена
     public Token(TokenType type, String value){

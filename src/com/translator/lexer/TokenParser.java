@@ -16,9 +16,10 @@ public class TokenParser {
         List<String> input = this.loadFile(fileName);
         TokenParsingResult result = new TokenParsingResult();
 
+        int lineNum = 0;
         for (String line : input) {
-            result.sourceLines.add(line);
-            tokenLines.add(this.parseLine(line));
+            result.sourceLines.add(line.trim());
+            tokenLines.add(this.parseLine(line, ++lineNum));
         }
 
         // определяем метки
@@ -63,21 +64,30 @@ public class TokenParser {
             tokens.addAll(tokenLine.getTokens());
         }
 
-        Boolean hasOtherTokens = tokens.stream().anyMatch(token->token.getTokenType()==TokenType.Other);
-
+        //токенов с Other быть не должно, помечаем их как ошибку
+        List<Token> otherTokens = new ArrayList<>();
+        for (Token token: tokens) {
+            if(token.getTokenType()==TokenType.Other)
+                otherTokens.add(token);
+        }
+        Boolean hasOtherTokens = otherTokens.size()>0;
         if(hasOtherTokens)
         {
-            result.errors.add("Неизвестная инструкция");
+            for (Token token: otherTokens) {
+                result.errors.add(String.format("Строка %d: неизвестная инструкция:%s",
+                        token.tokenLine.lineNumber,token.getValue()));
+            }
         }
+
         result.tokenLines = tokenLines;
         result.tokens = tokens;
         return result;
     }
 
-    public TokenLine parseLine(String line) {
+    public TokenLine parseLine(String line, int lineNumber) {
         StringTokenizer st = new StringTokenizer(line, " \t\n\r,.");
 
-        TokenLine tokenLine = new TokenLine();
+        TokenLine tokenLine = new TokenLine(lineNumber);
         List<String> stringTokens  = new ArrayList<>();
 
         while (st.hasMoreTokens()) {
