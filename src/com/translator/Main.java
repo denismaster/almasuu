@@ -39,7 +39,7 @@ public class Main {
 
             System.out.println("Генерация листинга и объектного кода");
             Writer writer = new Writer();
-            writer.generateOutputFiles(inputFileName,result.codeSegment);
+            writer.generateOutputFiles(inputFileName,result);
         } catch (Exception ex)
         {
             System.out.println("Возникла ошибка в результате трансляции:");

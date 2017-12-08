@@ -18,8 +18,10 @@ import java.util.List;
 public class Analyzer {
     AnalyzeResult result = new AnalyzeResult();
     CodeSegment currentSegment = result.codeSegment;
-    public AnalyzeResult analyze(TokenParsingResult result) {
-        List<Token> tokens = result.tokens;
+
+    public AnalyzeResult analyze(TokenParsingResult parsingResult) {
+        List<Token> tokens = parsingResult.tokens;
+        result.parsingResult = parsingResult;
 
         for (int i = 0; i < tokens.size(); ) {
             Token token = tokens.get(i);
@@ -41,15 +43,15 @@ public class Analyzer {
                 i = processDivCommands(tokens, i);
             }
             if (isJaeCommand(token)) {
-                i = processJaeCommands(tokens, i, result.labels);
+                i = processJaeCommands(tokens, i, parsingResult.labels);
             }
             if (isInterruptCommand(token)) {
-                i = processJaeCommands(tokens, i, result.labels);
+                i = processJaeCommands(tokens, i, parsingResult.labels);
             }
             i++;
         }
 
-        return this.result;
+        return result;
     }
 
     private int processMovCommands(List<Token> tokens, int i) {

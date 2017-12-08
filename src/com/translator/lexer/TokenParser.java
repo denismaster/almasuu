@@ -15,10 +15,11 @@ public class TokenParser {
         List<TokenLine> tokenLines = new ArrayList<>();
         List<String> input = this.loadFile(fileName);
         TokenParsingResult result = new TokenParsingResult();
+
         for (String line : input) {
+            result.sourceLines.add(line);
             tokenLines.add(this.parseLine(line));
         }
-
 
         // определяем метки
         for(TokenLine tokenLine: tokenLines)
@@ -68,7 +69,7 @@ public class TokenParser {
         {
             result.errors.add("Неизвестная инструкция");
         }
-
+        result.tokenLines = tokenLines;
         result.tokens = tokens;
         return result;
     }
