@@ -11,6 +11,7 @@ import com.translator.semantic.commands.jae.JaeCommand;
 import com.translator.semantic.commands.mov.ImRegMoveCommand;
 import com.translator.semantic.commands.test.ImDataAccTestCommand;
 import com.translator.semantic.commands.test.RegMemRegisterTestCommand;
+import com.translator.semantic.data.DataSegment;
 
 import java.util.List;
 
@@ -22,6 +23,10 @@ public class Analyzer {
 
         for (int i = 0; i < tokens.size(); ) {
             Token token = tokens.get(i);
+            if(i<tokens.size() && token.getTokenType()==TokenType.Name && tokens.get(i).getTokenType()==TokenType.Directive)
+            {
+                i=processDeclarations(tokens,i);
+            }
             if (isLabel(token)) {
                 String labelName = token.getValue();
                 currentSegment.labelsOffsets.put(labelName, currentSegment.getSize());
@@ -135,7 +140,7 @@ public class Analyzer {
         return i;
     }
 
-    private int processIntCommands(List<Token> tokens, int i, List<String> labels) {
+    private int processIntCommands(List<Token> tokens, int i) {
         //Если больше токенов нет, то выдаем ошибку
         if (i == tokens.size() - 1) {
             result.errors.add("Не хватает операндов!");
@@ -154,6 +159,18 @@ public class Analyzer {
         }else
         {
             result.errors.add("Операнды не совпадают");
+        }
+        return i;
+    }
+
+    private int processDeclarations(List<Token> tokens, int i) {
+        if (i == tokens.size() - 1) {
+            result.errors.add("Не хватает операндов!");
+            return i;
+        }
+        Token token = tokens.get(i);
+        if(isSegmentDirective(token)){
+            DataSegment segment = new DataSegment();
         }
         return i;
     }
@@ -190,5 +207,12 @@ public class Analyzer {
 
     public boolean isLabel(Token token) {
         return token.getTokenType()==TokenType.Label;
+    }
+
+
+    //SEGMENT
+    public boolean isSegmentDirective(Token token) {
+        if (token.getTokenType() != TokenType.Directive) return false;
+        return token.getValue().equalsIgnoreCase("SEGMENT");
     }
 }

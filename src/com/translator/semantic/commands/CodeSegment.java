@@ -1,9 +1,6 @@
 package com.translator.semantic.commands;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class CodeSegment implements CodeGeneratable{
     private int displacementInBytes;
@@ -22,7 +19,13 @@ public class CodeSegment implements CodeGeneratable{
     public String generateCode(){
         StringBuilder builder  = new StringBuilder();
         for(Command c: commands){
-            builder.append(c.generateCode());
+            StringTokenizer st = new StringTokenizer(c.generateCode(), " ");
+            String resultHexCode = "";
+            while(st.hasMoreTokens()){
+                String byteCode = st.nextToken();
+                resultHexCode += Integer.toHexString(Integer.parseInt(byteCode,2))+" ";
+            }
+            builder.append(resultHexCode);
             builder.append("\n");
         }
         return builder.toString();
