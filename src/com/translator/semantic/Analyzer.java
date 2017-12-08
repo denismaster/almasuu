@@ -14,6 +14,7 @@ import com.translator.semantic.commands.test.RegMemRegisterTestCommand;
 import com.translator.semantic.data.DataSegment;
 
 import java.util.List;
+import java.util.Optional;
 
 public class Analyzer {
     AnalyzeResult result = new AnalyzeResult();
@@ -46,7 +47,7 @@ public class Analyzer {
                 i = processJaeCommands(tokens, i, parsingResult.labels);
             }
             if (isInterruptCommand(token)) {
-                i = processJaeCommands(tokens, i, parsingResult.labels);
+                i = processIntCommands(tokens, i);
             }
             i++;
         }
@@ -66,9 +67,14 @@ public class Analyzer {
             }
             Token secondOperand = tokens.get(++i);
             if (secondOperand.getTokenType() == TokenType.Number) {
-                int value = Integer.parseInt(secondOperand.getValue(), 16);
-                Command command = new ImRegMoveCommand(firstOperand.getValue(), value, value > 256);
-                currentSegment.commands.add(command);
+                Optional<Integer> value = AnalyzerUtils.readDecHex(secondOperand.getValue());
+                if(value.isPresent())
+                {
+                    int val = value.get();
+                    Command command = new ImRegMoveCommand(firstOperand.getValue(), val, val > 256);
+                    currentSegment.commands.add(command);
+                }
+
             }
             if (secondOperand.getTokenType() == TokenType.Register) {
 
@@ -149,7 +155,13 @@ public class Analyzer {
         }
         Token firstOperand = tokens.get(++i);
         if (firstOperand.getTokenType() == TokenType.Number) {
-            int type = Integer.parseInt(firstOperand.getValue(), 16);
+            Optional<Integer> value = AnalyzerUtils.readDecHex(firstOperand.getValue());
+            if(!value.isPresent()){
+                result.errors.add("Ошибочный операнд!");
+                return i;
+            }
+
+            int type = value.get();
             if(type==0x20){
                 Command command = new InterruptCommand(type);
                 currentSegment.commands.add(command);

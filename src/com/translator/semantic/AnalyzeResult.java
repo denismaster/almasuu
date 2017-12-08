@@ -14,4 +14,5 @@ public class AnalyzeResult {
     public boolean hasErrors(){
         return errors.size()>0;
     }
+
 }

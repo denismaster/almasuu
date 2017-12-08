@@ -1,8 +1,10 @@
 package com.translator.semantic.commands;
 
+import com.translator.semantic.Segment;
+
 import java.util.*;
 
-public class CodeSegment implements CodeGeneratable{
+public class CodeSegment extends Segment implements CodeGeneratable{
     private int displacementInBytes;
     public List<Command> commands;
 

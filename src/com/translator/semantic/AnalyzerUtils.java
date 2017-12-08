@@ -1,6 +1,7 @@
 package com.translator.semantic;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 public class AnalyzerUtils {
     public static String getRegisterCode(String register){
@@ -72,5 +73,25 @@ public class AnalyzerUtils {
             case RegisterIndirect: return "00";
         }
         return "";
+    }
+
+    /**
+     * Читает десятичное или шестнадцатиричное число из строки
+     * @param str строка, содержащая число
+     * @return число или None
+     */
+    public static Optional<Integer> readDecHex(String str){
+        try{
+            str = str.trim();
+            if(str.endsWith("H")){
+               return Optional.of(Integer.parseInt(str.substring(0,str.length()-1),16));
+            }
+            else{
+                return Optional.of(Integer.parseInt(str,10));
+            }
+        }
+        catch(Exception e){
+            return Optional.empty();
+        }
     }
 }
