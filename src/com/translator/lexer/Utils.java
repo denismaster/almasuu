@@ -35,7 +35,8 @@ public class Utils {
             "SEGMENT", "ENDS",
             "DW",
             "DB",
-            "ORG","OFFSET"
+            "ORG","OFFSET",
+            "END",
     };
 
     /***
@@ -75,7 +76,7 @@ public class Utils {
      * Метод, проверяющий является ли токен числом
      */
     public static boolean isNumber(String lexeme){
-        return lexeme.trim().matches("[0-9a-fA-F]+H?");
+        return lexeme.trim().matches("[0-9a-fA-F]+(H|h)?");
     }
 
     /***

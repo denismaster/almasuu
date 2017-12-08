@@ -19,6 +19,7 @@ import java.util.Optional;
 public class Analyzer {
     AnalyzeResult result = new AnalyzeResult();
     CodeSegment currentSegment = result.codeSegment;
+    int currentLineNumber;
 
     public AnalyzeResult analyze(TokenParsingResult parsingResult) {
         List<Token> tokens = parsingResult.tokens;
@@ -31,6 +32,7 @@ public class Analyzer {
 
         for (int i = 0; i < tokens.size(); ) {
             Token token = tokens.get(i);
+            currentLineNumber =  token.tokenLine.lineNumber;
             if(i<tokens.size() && token.getTokenType()==TokenType.Name && tokens.get(i).getTokenType()==TokenType.Directive)
             {
                 i=processDeclarations(tokens,i);
@@ -77,7 +79,7 @@ public class Analyzer {
                 {
                     int val = value.get();
                     Command command = new ImRegMoveCommand(firstOperand.getValue(), val, val > 256);
-                    currentSegment.commands.add(command);
+                    currentSegment.add(currentLineNumber, command);
                 }
 
             }
@@ -104,7 +106,7 @@ public class Analyzer {
                 boolean isWide = AnalyzerUtils.isWideRegister(firstOperand.getValue());
                 Command command = new RegMemRegisterTestCommand(firstOperand.getValue(),
                         secondOperand.getValue(), isWide, ModeType.RegisterAddressing);
-                currentSegment.commands.add(command);
+                currentSegment.add(currentLineNumber, command);
             }
         }
         else
@@ -124,7 +126,7 @@ public class Analyzer {
             boolean isWide = AnalyzerUtils.isWideRegister(firstOperand.getValue());
             Command command = new DivCommand(isWide,
                     firstOperand.getValue(), ModeType.RegisterAddressing);
-            currentSegment.commands.add(command);
+            currentSegment.add(currentLineNumber, command);
         }else
         {
             result.errors.add("Операнды не совпадают");
@@ -145,7 +147,7 @@ public class Analyzer {
             }
             String labelName = firstOperand.getValue();
             Command command = new JaeCommand(currentSegment.labelsOffsets.get(labelName));
-            currentSegment.commands.add(command);
+            currentSegment.add(currentLineNumber, command);
         }else
         {
             result.errors.add("Операнды не совпадают");
@@ -169,7 +171,7 @@ public class Analyzer {
             int type = value.get();
             if(type==0x20){
                 Command command = new InterruptCommand(type);
-                currentSegment.commands.add(command);
+                currentSegment.add(currentLineNumber, command);
             }
             else
             {

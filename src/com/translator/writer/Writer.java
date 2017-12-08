@@ -25,7 +25,10 @@ public class Writer {
     private String generateListing(AnalyzeResult analyzeResult){
         StringBuilder builder = new StringBuilder();
         builder.append("almasuu - А.Рябцева (с) 2017\n");
-        builder.append("\n\n");
+        builder.append("Листинг трансляции\n");
+        builder.append("\n");
+
+        ///Обрабатываем и выводим ошибки парсинга
         if(analyzeResult.parsingResult.errors.size()>0)
         {
             builder.append("В ходе парсинга обнаружены ошибки:\n");
@@ -33,14 +36,13 @@ public class Writer {
                     analyzeResult.parsingResult.errors) {
                 builder.append(error+"\n");
             }
+
+            builder.append("\n");
         }
-        builder.append("\n");
-        int i=0;
-        for(String sourceLine: analyzeResult.parsingResult.sourceLines)
-        {
-            builder.append(String.format("%04X\t\t%s\n",i,sourceLine));
-            i++;
-        }
+
+        //выводим сгенерированный код
+        builder.append(String.format("Line\t%8s\t%50s\n","Код","Исходный код"));
+        builder.append(analyzeResult.getResults());
         return builder.toString();
     }
 
