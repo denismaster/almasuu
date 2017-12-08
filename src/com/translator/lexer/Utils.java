@@ -10,7 +10,8 @@ public class Utils {
             "MOV",
             "DIV",
             "JAE",
-            "TEST"
+            "TEST",
+            "INT"
     };
 
     /***

@@ -6,6 +6,7 @@ import com.translator.lexer.TokenType;
 import com.translator.semantic.commands.CodeSegment;
 import com.translator.semantic.commands.Command;
 import com.translator.semantic.commands.div.DivCommand;
+import com.translator.semantic.commands.intpt.InterruptCommand;
 import com.translator.semantic.commands.jae.JaeCommand;
 import com.translator.semantic.commands.mov.ImRegMoveCommand;
 import com.translator.semantic.commands.test.ImDataAccTestCommand;
@@ -35,6 +36,9 @@ public class Analyzer {
                 i = processDivCommands(tokens, i);
             }
             if (isJaeCommand(token)) {
+                i = processJaeCommands(tokens, i, result.labels);
+            }
+            if (isInterruptCommand(token)) {
                 i = processJaeCommands(tokens, i, result.labels);
             }
             i++;
@@ -131,25 +135,57 @@ public class Analyzer {
         return i;
     }
 
+    private int processIntCommands(List<Token> tokens, int i, List<String> labels) {
+        //Если больше токенов нет, то выдаем ошибку
+        if (i == tokens.size() - 1) {
+            result.errors.add("Не хватает операндов!");
+        }
+        Token firstOperand = tokens.get(++i);
+        if (firstOperand.getTokenType() == TokenType.Number) {
+            int type = Integer.parseInt(firstOperand.getValue(), 16);
+            if(type==0x20){
+                Command command = new InterruptCommand(type);
+                currentSegment.commands.add(command);
+            }
+            else
+            {
+                result.errors.add("Не поддерживаемый тип прерывания");
+            }
+        }else
+        {
+            result.errors.add("Операнды не совпадают");
+        }
+        return i;
+    }
 
+    //MOV
     public boolean isMoveCommand(Token token) {
         if (token.getTokenType() != TokenType.Command) return false;
         return token.getValue().equalsIgnoreCase("MOV");
     }
 
+    //TEST
     public boolean isTestCommand(Token token) {
         if (token.getTokenType() != TokenType.Command) return false;
         return token.getValue().equalsIgnoreCase("TEST");
     }
 
+    //JAE
     public boolean isJaeCommand(Token token) {
         if (token.getTokenType() != TokenType.Command) return false;
         return token.getValue().equalsIgnoreCase("JAE");
     }
 
+    //DIV
     public boolean isDivCommand(Token token) {
         if (token.getTokenType() != TokenType.Command) return false;
         return token.getValue().equalsIgnoreCase("DIV");
+    }
+
+    //INT 20H
+    public boolean isInterruptCommand(Token token) {
+        if (token.getTokenType() != TokenType.Command) return false;
+        return token.getValue().equalsIgnoreCase("INT");
     }
 
     public boolean isLabel(Token token) {

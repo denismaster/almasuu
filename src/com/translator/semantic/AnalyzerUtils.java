@@ -69,7 +69,7 @@ public class AnalyzerUtils {
 
             //16-бит
             case RegisterAddressing: return "11";
-
+            case RegisterIndirect: return "00";
         }
         return "";
     }
