@@ -8,6 +8,7 @@ import java.util.*;
 public class CodeSegment extends Segment implements CodeGeneratable{
     private int displacementInBytes;
     public Map<Integer,Command> commands;
+    public Boolean isClosed = false;
 
     public CodeSegment(int displacementInBytes){
         this.displacementInBytes = displacementInBytes;
@@ -38,5 +39,16 @@ public class CodeSegment extends Segment implements CodeGeneratable{
             currentSize+=command.getSize();
         }
         return currentSize;
+    }
+
+    @Override
+    public void closeSegment() {
+        isClosed = true;
+    }
+
+    @Override
+    public void add(int line,CodeGeneratable t) {
+        if(t instanceof Command)
+            this.add(line, (Command)t);
     }
 }

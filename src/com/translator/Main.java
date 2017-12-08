@@ -34,7 +34,7 @@ public class Main {
 
             if(result.hasErrors())
             {
-                throw new Exception("Ошибки в ходе семантического анализа.");
+                System.out.println("Ошибки в ходе семантического анализа.");
             }
 
             System.out.println("Генерация листинга и объектного кода");

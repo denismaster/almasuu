@@ -35,8 +35,8 @@ public class AnalyzeResult {
 
     public List<String> errors = new ArrayList<>();
     public TokenParsingResult parsingResult;
-    public CodeSegment codeSegment = new CodeSegment(0);
-    public DataSegment dataSegment = new DataSegment();
+    public CodeSegment codeSegment = null;//new CodeSegment(0);
+    public DataSegment dataSegment = null;//n;ew DataSegment();
 
     public boolean hasErrors(){
         return errors.size()>0;

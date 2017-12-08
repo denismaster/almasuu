@@ -11,10 +11,14 @@ public class AnalyzerUtils {
             case "AX": return "000";
             case "CX": return "001";
             case "DX": return "010";
+            case "[BX]":
             case "BX": return "011";
             case "SP": return "100";
+            case "[BP]":
             case "BP": return "101";
+            case "[SI]":
             case "SI": return "110";
+            case "[DI]":
             case "DI": return "111";
 
             //8-бит
@@ -83,7 +87,7 @@ public class AnalyzerUtils {
     public static Optional<Integer> readDecHex(String str){
         try{
             str = str.trim();
-            if(str.endsWith("H")){
+            if(str.endsWith("H")||str.endsWith("h")){
                return Optional.of(Integer.parseInt(str.substring(0,str.length()-1),16));
             }
             else{

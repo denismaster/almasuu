@@ -40,8 +40,20 @@ public class Writer {
             builder.append("\n");
         }
 
+        ///Обрабатываем и выводим ошибки парсинга
+        if(analyzeResult.hasErrors())
+        {
+            builder.append("В ходе трансляции обнаружены ошибки:\n");
+            for (String error :
+                    analyzeResult.errors) {
+                builder.append(error+"\n");
+            }
+
+            builder.append("\n");
+        }
+
         //выводим сгенерированный код
-        builder.append(String.format("Line\t%8s\t%50s\n","Код","Исходный код"));
+        builder.append(String.format("Line\t%8s\t%15s\n","Код","Исходный код"));
         builder.append(analyzeResult.getResults());
         return builder.toString();
     }
