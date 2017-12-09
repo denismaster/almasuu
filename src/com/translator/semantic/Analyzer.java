@@ -222,28 +222,19 @@ public class Analyzer {
                 result.codeSegment.closeSegment();
             }
         }
-        if (isEndDirective(token)) {
-            if (i == tokens.size() - 1) {
+        if (isEndDirective(token))
+        {
+            if(result.dataSegment!=null && result.dataSegment.hasEndpointDeclaration())
+            {
+                result.errors.add("Точка входа уже была задана. Строка "+currentLineNumber);
+                return i;
+            }
+            if (i == tokens.size() - 1  && result.dataSegment!=null && !result.dataSegment.hasEndpointDeclaration()) {
                 result.errors.add("Не задана точка входа. Строка "+currentLineNumber);
                 return i;
             }
             Token firstOperand = tokens.get(++i);
-            if (firstOperand.getTokenType() == TokenType.Label) {
-                String labelName = firstOperand.getValue();
-                int offset = currentSegment.labelsOffsets.get(labelName);
-                result.dataSegment.add(currentLineNumber,new MountPointDeclaration(offset+currentDisplacement));
-            } else {
-                result.errors.add("Операнды не совпадают. Строка "+currentLineNumber);
-                return i;
-            }
-        }
-        if (isEndDirective(token)) {
-            if (i == tokens.size() - 1) {
-                result.errors.add("Не задана точка входа. Строка "+currentLineNumber);
-                return i;
-            }
-            Token firstOperand = tokens.get(++i);
-            if (firstOperand.getTokenType() == TokenType.Label) {
+            if (firstOperand.getTokenType() == TokenType.Name) {
                 String labelName = firstOperand.getValue();
                 int offset = currentSegment.labelsOffsets.get(labelName);
                 result.dataSegment.add(currentLineNumber,new MountPointDeclaration(offset+currentDisplacement));
