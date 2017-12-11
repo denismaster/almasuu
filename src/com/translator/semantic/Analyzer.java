@@ -9,7 +9,6 @@ import com.translator.semantic.commands.div.DivCommand;
 import com.translator.semantic.commands.intpt.InterruptCommand;
 import com.translator.semantic.commands.jae.JaeCommand;
 import com.translator.semantic.commands.mov.ImRegMoveCommand;
-import com.translator.semantic.commands.test.ImDataAccTestCommand;
 import com.translator.semantic.commands.test.RegMemRegisterTestCommand;
 import com.translator.semantic.data.*;
 
@@ -167,12 +166,8 @@ public class Analyzer {
             }
 
             int type = value.get();
-            if (type == 0x20) {
-                Command command = new InterruptCommand(type);
-                currentSegment.add(currentLineNumber, command);
-            } else {
-                result.errors.add("Не поддерживаемый тип прерывания. Строка "+currentLineNumber);
-            }
+            Command command = new InterruptCommand(type);
+            currentSegment.add(currentLineNumber, command);
         } else {
             result.errors.add("Операнды не совпадают. Строка "+currentLineNumber);
         }
