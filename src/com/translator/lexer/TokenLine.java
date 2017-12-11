@@ -35,6 +35,8 @@ public class TokenLine {
     }
 
     public Token nextToken(){
-        return _tokens.get(currentTokenIndex++);
+        if(hasMoreTokens())
+            return _tokens.get(currentTokenIndex++);
+        else return null;
     }
 }

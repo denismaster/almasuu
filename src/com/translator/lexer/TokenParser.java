@@ -1,8 +1,11 @@
 package com.translator.lexer;
 
+import com.translator.semantic.AnalyzerUtils;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.StringTokenizer;
 
 public class TokenParser {
@@ -38,24 +41,7 @@ public class TokenParser {
         result.labels = _labels;
 
         // определяем имена переменных
-        for(TokenLine tokenLine: tokenLines)
-        {
-            for(int i=0;i<tokenLine.getTokens().size();i++){
-                Token token = tokenLine.getTokens().get(i);
-                if(token.getTokenType()==TokenType.Other && i < tokenLine.getTokens().size()-1){
-                    Token nextToken = tokenLine.getTokens().get(i+1);
-                    if(nextToken.getTokenType()==TokenType.Directive){
-                        token.setTokenType(TokenType.Name);
-                        result.segments.add(token.getValue());
-                }
-                }
-                if(token.getTokenType()==TokenType.Other
-                        && (result.labels.contains(token.getValue()) || result.segments.contains(token.getValue()))){
-                    token.setTokenType(TokenType.Name);
-                    result.names.add(token.getValue());
-                }
-            }
-        }
+        processDeclarations(tokenLines, result);
         List<Token> tokens = new ArrayList<>();
 
         for(TokenLine tokenLine: tokenLines)
@@ -79,8 +65,36 @@ public class TokenParser {
         }
 
         result.tokenLines = tokenLines;
-        result.tokens = tokens;
         return result;
+    }
+
+    private void processDeclarations(List<TokenLine> tokenLines, TokenParsingResult result) {
+        for(TokenLine tokenLine: tokenLines)
+        {
+            for(int i=0;i<tokenLine.getTokens().size();i++){
+                Token token = tokenLine.getTokens().get(i);
+                if(Utils.isOrgDirective(token) && i < tokenLine.getTokens().size()-1)
+                {
+                    Token nextToken = tokenLine.getTokens().get(i+1);
+                    if(nextToken.getTokenType()==TokenType.Number) {
+                        Optional<Integer> number = AnalyzerUtils.readDecHex(nextToken.getValue());
+                        if(!number.isPresent()) result.org = number.get();
+                    }
+                }
+                if(token.getTokenType()== TokenType.Other && i < tokenLine.getTokens().size()-1){
+                    Token nextToken = tokenLine.getTokens().get(i+1);
+                    if(nextToken.getTokenType()==TokenType.Directive){
+                        token.setTokenType(TokenType.Name);
+                        result.segments.add(token.getValue());
+                }
+                }
+                if(token.getTokenType()==TokenType.Other
+                        && (result.labels.contains(token.getValue()) || result.segments.contains(token.getValue()))){
+                    token.setTokenType(TokenType.Name);
+                    result.names.add(token.getValue());
+                }
+            }
+        }
     }
 
     private TokenLine parseLine(String line, int lineNumber) {

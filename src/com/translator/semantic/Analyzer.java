@@ -18,15 +18,14 @@ import java.util.Optional;
 
 public class Analyzer {
     AnalyzeResult result = new AnalyzeResult();
-    CodeSegment currentSegment = new CodeSegment(0);
+    CodeSegment currentSegment;
     int currentLineNumber;
-    int currentDisplacement = -1;
+    int currentDisplacement = 0;
 
     public AnalyzeResult analyze(TokenParsingResult parsingResult) {
-        List<Token> tokens = parsingResult.tokens;
         List<TokenLine> tokenLines = parsingResult.tokenLines;
         result.parsingResult = parsingResult;
-
+        currentSegment = new CodeSegment(parsingResult.org);
         if (parsingResult.errors.size() > 0) {
             return result;
         }
@@ -177,6 +176,7 @@ public class Analyzer {
         }
     }
 
+    /*
     private int processDeclarations(List<Token> tokens, int i) {
         if (i == tokens.size() - 1) {
             result.errors.add("Не хватает операндов! Строка "+ currentLineNumber);
@@ -276,7 +276,7 @@ public class Analyzer {
             result.dataSegment.add(currentLineNumber, new ByteDataDeclaration(variable,value.get()));
         }
         return i;
-    }
+    }*/
 
     //MOV
     public boolean isMoveCommand(Token token) {
@@ -310,48 +310,5 @@ public class Analyzer {
 
     public boolean isLabel(Token token) {
         return token.getTokenType() == TokenType.Label;
-    }
-
-
-    //SEGMENT
-    public boolean isSegmentDirective(Token token) {
-        if (token.getTokenType() != TokenType.Directive) return false;
-        return token.getValue().equalsIgnoreCase("SEGMENT");
-    }
-
-    //Org
-    public boolean isOrgDirective(Token token) {
-        if (token.getTokenType() != TokenType.Directive) return false;
-        return token.getValue().equalsIgnoreCase("ORG");
-    }
-
-    //ENDS
-    public boolean isEndsDirective(Token token) {
-        if (token.getTokenType() != TokenType.Directive) return false;
-        return token.getValue().equalsIgnoreCase("ENDS");
-    }
-
-    //END
-    public boolean isEndDirective(Token token) {
-        if (token.getTokenType() != TokenType.Directive) return false;
-        return token.getValue().equalsIgnoreCase("END");
-    }
-
-    //Offset
-    public boolean isOffsetDirective(Token token) {
-        if (token.getTokenType() != TokenType.Directive) return false;
-        return token.getValue().equalsIgnoreCase("OFFSET");
-    }
-
-    //DW
-    public boolean isDataWordDirective(Token token) {
-        if (token.getTokenType() != TokenType.Directive) return false;
-        return token.getValue().equalsIgnoreCase("DW");
-    }
-
-    //DB
-    public boolean isDataByteDirective(Token token) {
-        if (token.getTokenType() != TokenType.Directive) return false;
-        return token.getValue().equalsIgnoreCase("DB");
     }
 }

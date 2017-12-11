@@ -92,4 +92,46 @@ public class Utils {
     public static boolean isIndirectAddressingRegister(String lexeme) {
         return Arrays.stream(IndirectAddressingRegisters).anyMatch(x->x.equalsIgnoreCase(lexeme));
     }
+
+    //SEGMENT
+    public static boolean isSegmentDirective(Token token) {
+        if (token.getTokenType() != TokenType.Directive) return false;
+        return token.getValue().equalsIgnoreCase("SEGMENT");
+    }
+
+    //Org
+    public static  boolean isOrgDirective(Token token) {
+        if (token.getTokenType() != TokenType.Directive) return false;
+        return token.getValue().equalsIgnoreCase("ORG");
+    }
+
+    //ENDS
+    public static  boolean isEndsDirective(Token token) {
+        if (token.getTokenType() != TokenType.Directive) return false;
+        return token.getValue().equalsIgnoreCase("ENDS");
+    }
+
+    //END
+    public static  boolean isEndDirective(Token token) {
+        if (token.getTokenType() != TokenType.Directive) return false;
+        return token.getValue().equalsIgnoreCase("END");
+    }
+
+    //Offset
+    public static  boolean isOffsetDirective(Token token) {
+        if (token.getTokenType() != TokenType.Directive) return false;
+        return token.getValue().equalsIgnoreCase("OFFSET");
+    }
+
+    //DW
+    public static  boolean isDataWordDirective(Token token) {
+        if (token.getTokenType() != TokenType.Directive) return false;
+        return token.getValue().equalsIgnoreCase("DW");
+    }
+
+    //DB
+    public boolean isDataByteDirective(Token token) {
+        if (token.getTokenType() != TokenType.Directive) return false;
+        return token.getValue().equalsIgnoreCase("DB");
+    }
 }
