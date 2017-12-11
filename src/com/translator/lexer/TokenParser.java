@@ -8,8 +8,7 @@ import java.util.StringTokenizer;
 public class TokenParser {
     private final String COMMENT_START_SYMBOL = ";";
 
-    private final List<String> _labels = new ArrayList<String>();
-    private final List<String> _errors = new ArrayList<String>();
+    private final List<String> _labels = new ArrayList<>();
 
     public TokenParsingResult parse(String fileName) {
         List<TokenLine> tokenLines = new ArrayList<>();
@@ -84,7 +83,7 @@ public class TokenParser {
         return result;
     }
 
-    public TokenLine parseLine(String line, int lineNumber) {
+    private TokenLine parseLine(String line, int lineNumber) {
         StringTokenizer st = new StringTokenizer(line, " \t\n\r,.");
 
         TokenLine tokenLine = new TokenLine(lineNumber);
@@ -147,8 +146,6 @@ public class TokenParser {
                 list.add(line);
                 line = reader.readLine();
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
