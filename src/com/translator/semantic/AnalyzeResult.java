@@ -65,7 +65,7 @@ public class AnalyzeResult {
 
         StringBuilder builder = new StringBuilder();
         for (TranslationRecord record: results) {
-            builder.append(String.format("%04X\t%8s\t%s\n",
+            builder.append(String.format("%04d\t%8s\t%s\n",
                     record.index,record.code,record.sourceCode));
         }
 

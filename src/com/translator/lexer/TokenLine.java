@@ -10,6 +10,8 @@ public class TokenLine {
     public final int lineNumber;
     private List<Token> _tokens;
 
+    private int currentTokenIndex=0;
+
     public TokenLine(int lineNumber){
         this.lineNumber = lineNumber;
         this._tokens = new ArrayList<>();
@@ -26,5 +28,13 @@ public class TokenLine {
 
     public boolean isEmpty(){
         return this._tokens.size()==0;
+    }
+
+    public boolean hasMoreTokens(){
+        return currentTokenIndex<this._tokens.size();
+    }
+
+    public Token nextToken(){
+        return _tokens.get(currentTokenIndex++);
     }
 }
