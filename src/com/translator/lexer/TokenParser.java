@@ -1,6 +1,7 @@
 package com.translator.lexer;
 
 import com.translator.semantic.AnalyzerUtils;
+import com.translator.semantic.data.Variable;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -69,6 +70,7 @@ public class TokenParser {
     }
 
     private void processDeclarations(List<TokenLine> tokenLines, TokenParsingResult result) {
+        int address = 0;
         for(TokenLine tokenLine: tokenLines)
         {
             for(int i=0;i<tokenLine.getTokens().size();i++){
@@ -78,7 +80,18 @@ public class TokenParser {
                     Token nextToken = tokenLine.getTokens().get(i+1);
                     if(nextToken.getTokenType()==TokenType.Number) {
                         Optional<Integer> number = AnalyzerUtils.readDecHex(nextToken.getValue());
-                        if(!number.isPresent()) result.org = number.get();
+                        if(number.isPresent()) result.org = number.get();
+                    }
+                }
+                if(token.getTokenType()== TokenType.Other && i < tokenLine.getTokens().size()-2)
+                {
+                    Token nextToken = tokenLine.getTokens().get(i+1);
+                    Token thirdToken = tokenLine.getTokens().get(i+2);
+                    if(Utils.isDataWordDirective(nextToken)) {
+                        Optional<Integer> number = AnalyzerUtils.readDecHex(thirdToken.getValue());
+                        if(number.isPresent())
+                            result.variables.put(token.getValue(),
+                                    new Variable(token.getValue(),address, number.get()));
                     }
                 }
                 if(token.getTokenType()== TokenType.Other && i < tokenLine.getTokens().size()-1){

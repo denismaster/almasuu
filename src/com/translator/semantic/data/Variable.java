@@ -12,5 +12,6 @@ public class Variable {
         this.name = name;
         this.address = address;
         this.value = value;
+        type = value>255? OperandType.immediate16 : OperandType.immediate8;
     }
 }
