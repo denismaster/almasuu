@@ -2,6 +2,7 @@ package com.translator.semantic.commands.mov;
 
 import com.translator.semantic.AnalyzerUtils;
 import com.translator.semantic.commands.Command;
+import com.translator.semantic.commands.OperandType;
 
 public class ImRegMoveCommand implements Command {
     public String register;
@@ -23,5 +24,12 @@ public class ImRegMoveCommand implements Command {
     @Override
     public int getSize() {
         return isWide ? 3 : 2;
+    }
+
+    @Override
+    public Boolean canApplyTo(OperandType op1, OperandType op2) {
+        if(op1==OperandType.register16 && op2==OperandType.immediate16) return true;
+        if(op1==OperandType.register8 && op2==OperandType.immediate8) return true;
+        return false;
     }
 }

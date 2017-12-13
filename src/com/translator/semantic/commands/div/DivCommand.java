@@ -3,6 +3,7 @@ package com.translator.semantic.commands.div;
 import com.translator.semantic.AnalyzerUtils;
 import com.translator.semantic.ModeType;
 import com.translator.semantic.commands.Command;
+import com.translator.semantic.commands.OperandType;
 
 public class DivCommand implements Command {
     private boolean isWide;
@@ -27,5 +28,13 @@ public class DivCommand implements Command {
     @Override
     public int getSize() {
         return 2;
+    }
+
+    @Override
+    public Boolean canApplyTo(OperandType op1, OperandType op2) {
+        if (op2 != OperandType.no) {
+            return false;
+        }
+        return op1 == OperandType.register8 || op1 == OperandType.register16;
     }
 }

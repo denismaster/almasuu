@@ -1,15 +1,18 @@
 package com.translator.lexer;
 
+import com.translator.semantic.AnalyzerUtils;
+import com.translator.semantic.data.Variable;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.StringTokenizer;
 
 public class TokenParser {
     private final String COMMENT_START_SYMBOL = ";";
 
-    private final List<String> _labels = new ArrayList<String>();
-    private final List<String> _errors = new ArrayList<String>();
+    private final List<String> _labels = new ArrayList<>();
 
     public TokenParsingResult parse(String fileName) {
         List<TokenLine> tokenLines = new ArrayList<>();
@@ -39,24 +42,7 @@ public class TokenParser {
         result.labels = _labels;
 
         // определяем имена переменных
-        for(TokenLine tokenLine: tokenLines)
-        {
-            for(int i=0;i<tokenLine.getTokens().size();i++){
-                Token token = tokenLine.getTokens().get(i);
-                if(token.getTokenType()==TokenType.Other && i < tokenLine.getTokens().size()-1){
-                    Token nextToken = tokenLine.getTokens().get(i+1);
-                    if(nextToken.getTokenType()==TokenType.Directive){
-                        token.setTokenType(TokenType.Name);
-                        result.segments.add(token.getValue());
-                }
-                }
-                if(token.getTokenType()==TokenType.Other
-                        && (result.labels.contains(token.getValue()) || result.segments.contains(token.getValue()))){
-                    token.setTokenType(TokenType.Name);
-                    result.names.add(token.getValue());
-                }
-            }
-        }
+        processDeclarations(tokenLines, result);
         List<Token> tokens = new ArrayList<>();
 
         for(TokenLine tokenLine: tokenLines)
@@ -80,11 +66,51 @@ public class TokenParser {
         }
 
         result.tokenLines = tokenLines;
-        result.tokens = tokens;
         return result;
     }
 
-    public TokenLine parseLine(String line, int lineNumber) {
+    private void processDeclarations(List<TokenLine> tokenLines, TokenParsingResult result) {
+        int address = 0;
+        for(TokenLine tokenLine: tokenLines)
+        {
+            for(int i=0;i<tokenLine.getTokens().size();i++){
+                Token token = tokenLine.getTokens().get(i);
+                if(Utils.isOrgDirective(token) && i < tokenLine.getTokens().size()-1)
+                {
+                    Token nextToken = tokenLine.getTokens().get(i+1);
+                    if(nextToken.getTokenType()==TokenType.Number) {
+                        Optional<Integer> number = AnalyzerUtils.readDecHex(nextToken.getValue());
+                        if(number.isPresent()) result.org = number.get();
+                    }
+                }
+                if(token.getTokenType()== TokenType.Other && i < tokenLine.getTokens().size()-2)
+                {
+                    Token nextToken = tokenLine.getTokens().get(i+1);
+                    Token thirdToken = tokenLine.getTokens().get(i+2);
+                    if(Utils.isDataWordDirective(nextToken)) {
+                        Optional<Integer> number = AnalyzerUtils.readDecHex(thirdToken.getValue());
+                        if(number.isPresent())
+                            result.variables.put(token.getValue(),
+                                    new Variable(token.getValue(),address, number.get()));
+                    }
+                }
+                if(token.getTokenType()== TokenType.Other && i < tokenLine.getTokens().size()-1){
+                    Token nextToken = tokenLine.getTokens().get(i+1);
+                    if(nextToken.getTokenType()==TokenType.Directive){
+                        token.setTokenType(TokenType.Name);
+                        result.segments.add(token.getValue());
+                }
+                }
+                if(token.getTokenType()==TokenType.Other
+                        && (result.labels.contains(token.getValue()) || result.segments.contains(token.getValue()))){
+                    token.setTokenType(TokenType.Name);
+                    result.names.add(token.getValue());
+                }
+            }
+        }
+    }
+
+    private TokenLine parseLine(String line, int lineNumber) {
         StringTokenizer st = new StringTokenizer(line, " \t\n\r,.");
 
         TokenLine tokenLine = new TokenLine(lineNumber);
@@ -147,8 +173,6 @@ public class TokenParser {
                 list.add(line);
                 line = reader.readLine();
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {

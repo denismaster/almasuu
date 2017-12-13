@@ -1,6 +1,7 @@
 package com.translator.semantic;
 
 import com.translator.lexer.Token;
+import com.translator.lexer.TokenLine;
 import com.translator.lexer.TokenParsingResult;
 import com.translator.lexer.TokenType;
 import com.translator.semantic.commands.CodeSegment;
@@ -9,7 +10,6 @@ import com.translator.semantic.commands.div.DivCommand;
 import com.translator.semantic.commands.intpt.InterruptCommand;
 import com.translator.semantic.commands.jae.JaeCommand;
 import com.translator.semantic.commands.mov.ImRegMoveCommand;
-import com.translator.semantic.commands.test.ImDataAccTestCommand;
 import com.translator.semantic.commands.test.RegMemRegisterTestCommand;
 import com.translator.semantic.data.*;
 
@@ -18,60 +18,65 @@ import java.util.Optional;
 
 public class Analyzer {
     AnalyzeResult result = new AnalyzeResult();
-    CodeSegment currentSegment = null;
+    CodeSegment currentSegment;
     int currentLineNumber;
-    int currentDisplacement = -1;
+    int currentDisplacement = 0;
 
     public AnalyzeResult analyze(TokenParsingResult parsingResult) {
-        List<Token> tokens = parsingResult.tokens;
+        List<TokenLine> tokenLines = parsingResult.tokenLines;
         result.parsingResult = parsingResult;
-
+        currentSegment = new CodeSegment(parsingResult.org);
         if (parsingResult.errors.size() > 0) {
             return result;
         }
 
-        for (int i = 0; i < tokens.size(); ) {
-            if(result.hasErrors()) break;;
+        for(int i=0;i<tokenLines.size();i++)
+        {
+            TokenLine tokenLine = tokenLines.get(i);
+            currentLineNumber = tokenLine.lineNumber;
 
-            Token token = tokens.get(i);
-            currentLineNumber = token.tokenLine.lineNumber;
-            i = processDeclarations(tokens, i);
-            if (isLabel(token)) {
-                String labelName = token.getValue();
-                currentSegment.labelsOffsets.put(labelName, currentSegment.getSize());
+            while(tokenLine.hasMoreTokens())
+            {
+                Token token = tokenLine.nextToken();
+
+                if (isLabel(token)) {
+                    String labelName = token.getValue();
+                    currentSegment.labelsOffsets.put(labelName, currentSegment.getSize());
+                }
+
+                if (isMoveCommand(token)) {
+                    processMovCommands(tokenLine);
+                }
+                if (isTestCommand(token)) {
+                    processTestCommands(tokenLine);
+                }
+                if (isDivCommand(token)) {
+                    processDivCommands(tokenLine);
+                }
+                if (isJaeCommand(token)) {
+                    processJaeCommands(tokenLine, parsingResult.labels);
+                }
+                if (isInterruptCommand(token)) {
+                    processIntCommands(tokenLine);
+                }
             }
-            if (isMoveCommand(token)) {
-                i = processMovCommands(tokens, i);
-            }
-            if (isTestCommand(token)) {
-                i = processTestCommands(tokens, i);
-            }
-            if (isDivCommand(token)) {
-                i = processDivCommands(tokens, i);
-            }
-            if (isJaeCommand(token)) {
-                i = processJaeCommands(tokens, i, parsingResult.labels);
-            }
-            if (isInterruptCommand(token)) {
-                i = processIntCommands(tokens, i);
-            }
-            i++;
         }
 
+        result.codeSegment = currentSegment;
         return result;
     }
 
-    private int processMovCommands(List<Token> tokens, int i) {
+    private void processMovCommands(TokenLine line) {
         //Если больше токенов нет, то выдаем ошибку
-        if (i == tokens.size() - 1) {
+        if (!line.hasMoreTokens()) {
             result.errors.add("Не хватает операндов! Строка "+currentLineNumber);
         }
-        Token firstOperand = tokens.get(++i);
+        Token firstOperand = line.nextToken();
         if (firstOperand.getTokenType() == TokenType.Register) {
-            if (i == tokens.size() - 1) {
+            if (!line.hasMoreTokens()) {
                 result.errors.add("Не хватает операндов! Строка "+currentLineNumber);
             }
-            Token secondOperand = tokens.get(++i);
+            Token secondOperand = line.nextToken();
             if (secondOperand.getTokenType() == TokenType.Number) {
                 Optional<Integer> value = AnalyzerUtils.readDecHex(secondOperand.getValue());
                 if (value.isPresent()) {
@@ -90,20 +95,19 @@ public class Analyzer {
                 currentSegment.add(currentLineNumber, command);
             }
         }
-        return i;
     }
 
-    private int processTestCommands(List<Token> tokens, int i) {
+    private void processTestCommands(TokenLine line) {
         //Если больше токенов нет, то выдаем ошибку
-        if (i == tokens.size() - 1) {
+        if (!line.hasMoreTokens()) {
             result.errors.add("Не хватает операндов! Строка "+currentLineNumber);
         }
-        Token firstOperand = tokens.get(++i);
+        Token firstOperand = line.nextToken();
         if (firstOperand.getTokenType() == TokenType.Register) {
-            if (i == tokens.size() - 1) {
+            if (!line.hasMoreTokens()) {
                 result.errors.add("Не хватает операндов! Строка "+currentLineNumber);
             }
-            Token secondOperand = tokens.get(++i);
+            Token secondOperand = line.nextToken();
 
             if (secondOperand.getTokenType() == TokenType.IndirectAddress) {
                 boolean isWide = AnalyzerUtils.isWideRegister(firstOperand.getValue());
@@ -114,16 +118,16 @@ public class Analyzer {
         } else {
             result.errors.add("Операнды не совпадают. Строка "+currentLineNumber);
         }
-        return i;
     }
 
-    private int processDivCommands(List<Token> tokens, int i) {
+    private void processDivCommands(TokenLine line) {
         //Если больше токенов нет, то выдаем ошибку
-        if (i == tokens.size() - 1) {
-            result.errors.add("Не хватает операндов!. Строка "+currentLineNumber);
+        if (!line.hasMoreTokens()) {
+            result.errors.add("Не хватает операндов!. Строка "+ currentLineNumber);
         }
-        Token firstOperand = tokens.get(++i);
+        Token firstOperand = line.nextToken();
         if (firstOperand.getTokenType() == TokenType.Register) {
+
             boolean isWide = AnalyzerUtils.isWideRegister(firstOperand.getValue());
             Command command = new DivCommand(isWide,
                     firstOperand.getValue(), ModeType.RegisterAddressing);
@@ -131,15 +135,14 @@ public class Analyzer {
         } else {
             result.errors.add("Операнды не совпадают. Строка "+currentLineNumber);
         }
-        return i;
     }
 
-    private int processJaeCommands(List<Token> tokens, int i, List<String> labels) {
+    private void processJaeCommands(TokenLine line, List<String> labels) {
         //Если больше токенов нет, то выдаем ошибку
-        if (i == tokens.size() - 1) {
+        if (!line.hasMoreTokens()) {
             result.errors.add("Не хватает операндов!. Строка "+currentLineNumber);
         }
-        Token firstOperand = tokens.get(++i);
+        Token firstOperand = line.nextToken();
         if (firstOperand.getTokenType() == TokenType.Name) {
             if (!labels.contains(firstOperand.getValue())) {
                 result.errors.add("Метка не определена. Строка "+currentLineNumber);
@@ -150,35 +153,30 @@ public class Analyzer {
         } else {
             result.errors.add("Операнды не совпадают. Строка "+currentLineNumber);
         }
-        return i;
     }
 
-    private int processIntCommands(List<Token> tokens, int i) {
+    private void processIntCommands(TokenLine line) {
         //Если больше токенов нет, то выдаем ошибку
-        if (i == tokens.size() - 1) {
+        if (!line.hasMoreTokens()) {
             result.errors.add("Не хватает операндов! Строка "+currentLineNumber);
         }
-        Token firstOperand = tokens.get(++i);
+        Token firstOperand = line.nextToken();
         if (firstOperand.getTokenType() == TokenType.Number) {
             Optional<Integer> value = AnalyzerUtils.readDecHex(firstOperand.getValue());
             if (!value.isPresent()) {
                 result.errors.add("Ошибочный операнд! Строка "+currentLineNumber);
-                return i;
+                return;
             }
 
             int type = value.get();
-            if (type == 0x20) {
-                Command command = new InterruptCommand(type);
-                currentSegment.add(currentLineNumber, command);
-            } else {
-                result.errors.add("Не поддерживаемый тип прерывания. Строка "+currentLineNumber);
-            }
+            Command command = new InterruptCommand(type);
+            currentSegment.add(currentLineNumber, command);
         } else {
             result.errors.add("Операнды не совпадают. Строка "+currentLineNumber);
         }
-        return i;
     }
 
+    /*
     private int processDeclarations(List<Token> tokens, int i) {
         if (i == tokens.size() - 1) {
             result.errors.add("Не хватает операндов! Строка "+ currentLineNumber);
@@ -278,7 +276,7 @@ public class Analyzer {
             result.dataSegment.add(currentLineNumber, new ByteDataDeclaration(variable,value.get()));
         }
         return i;
-    }
+    }*/
 
     //MOV
     public boolean isMoveCommand(Token token) {
@@ -312,48 +310,5 @@ public class Analyzer {
 
     public boolean isLabel(Token token) {
         return token.getTokenType() == TokenType.Label;
-    }
-
-
-    //SEGMENT
-    public boolean isSegmentDirective(Token token) {
-        if (token.getTokenType() != TokenType.Directive) return false;
-        return token.getValue().equalsIgnoreCase("SEGMENT");
-    }
-
-    //Org
-    public boolean isOrgDirective(Token token) {
-        if (token.getTokenType() != TokenType.Directive) return false;
-        return token.getValue().equalsIgnoreCase("ORG");
-    }
-
-    //ENDS
-    public boolean isEndsDirective(Token token) {
-        if (token.getTokenType() != TokenType.Directive) return false;
-        return token.getValue().equalsIgnoreCase("ENDS");
-    }
-
-    //END
-    public boolean isEndDirective(Token token) {
-        if (token.getTokenType() != TokenType.Directive) return false;
-        return token.getValue().equalsIgnoreCase("END");
-    }
-
-    //Offset
-    public boolean isOffsetDirective(Token token) {
-        if (token.getTokenType() != TokenType.Directive) return false;
-        return token.getValue().equalsIgnoreCase("OFFSET");
-    }
-
-    //DW
-    public boolean isDataWordDirective(Token token) {
-        if (token.getTokenType() != TokenType.Directive) return false;
-        return token.getValue().equalsIgnoreCase("DW");
-    }
-
-    //DB
-    public boolean isDataByteDirective(Token token) {
-        if (token.getTokenType() != TokenType.Directive) return false;
-        return token.getValue().equalsIgnoreCase("DB");
     }
 }
