@@ -130,7 +130,7 @@ public class Utils {
     }
 
     //DB
-    public boolean isDataByteDirective(Token token) {
+    public static boolean isDataByteDirective(Token token) {
         if (token.getTokenType() != TokenType.Directive) return false;
         return token.getValue().equalsIgnoreCase("DB");
     }

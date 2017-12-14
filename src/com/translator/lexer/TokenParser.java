@@ -1,6 +1,8 @@
 package com.translator.lexer;
 
 import com.translator.semantic.AnalyzerUtils;
+import com.translator.semantic.commands.OperandType;
+import com.translator.semantic.data.Label;
 import com.translator.semantic.data.Variable;
 
 import java.io.*;
@@ -82,16 +84,22 @@ public class TokenParser {
                         Optional<Integer> number = AnalyzerUtils.readDecHex(nextToken.getValue());
                         if(number.isPresent()) result.org = number.get();
                     }
+                    else
+                    {
+                       result.errors.add("Операнды не совпадают. Строка "+ tokenLine.lineNumber);
+                    }
                 }
                 if(token.getTokenType()== TokenType.Other && i < tokenLine.getTokens().size()-2)
                 {
                     Token nextToken = tokenLine.getTokens().get(i+1);
                     Token thirdToken = tokenLine.getTokens().get(i+2);
-                    if(Utils.isDataWordDirective(nextToken)) {
+                    if(Utils.isDataWordDirective(nextToken) || Utils.isDataByteDirective(nextToken)) {
                         Optional<Integer> number = AnalyzerUtils.readDecHex(thirdToken.getValue());
-                        if(number.isPresent())
-                            result.variables.put(token.getValue(),
-                                    new Variable(token.getValue(),address, number.get()));
+                        if(number.isPresent()) {
+                            Variable put = new Variable(token.getValue(), address, number.get());
+                                    result.variables.put(token.getValue(), put);
+                            address+=put.type== OperandType.immediate8 ? 1:2;
+                        }
                     }
                 }
                 if(token.getTokenType()== TokenType.Other && i < tokenLine.getTokens().size()-1){
@@ -105,6 +113,10 @@ public class TokenParser {
                         && (result.labels.contains(token.getValue()) || result.segments.contains(token.getValue()))){
                     token.setTokenType(TokenType.Name);
                     result.names.add(token.getValue());
+                }
+                if(Utils.isEndDirective(token) && i < tokenLine.getTokens().size()-1 )
+                {
+                    Token nextToken = tokenLine.getTokens().get(i+1);
                 }
             }
         }

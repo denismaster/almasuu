@@ -10,6 +10,7 @@ import com.translator.semantic.commands.div.DivCommand;
 import com.translator.semantic.commands.intpt.InterruptCommand;
 import com.translator.semantic.commands.jae.JaeCommand;
 import com.translator.semantic.commands.mov.ImRegMoveCommand;
+import com.translator.semantic.commands.mov.RegMemRegMoveCommand;
 import com.translator.semantic.commands.test.RegMemRegisterTestCommand;
 import com.translator.semantic.data.*;
 
@@ -84,16 +85,33 @@ public class Analyzer {
                     Command command = new ImRegMoveCommand(firstOperand.getValue(), val, val > 256);
                     currentSegment.add(currentLineNumber, command);
                 }
-
             }
             else
             if (secondOperand.getTokenType() == TokenType.Name) {
                 String variableName = secondOperand.getValue();
-                DataDeclaration variable = result.dataSegment.findVariable(variableName);
-                int val = variable.getValue();
-                Command command = new ImRegMoveCommand(firstOperand.getValue(), val, val > 256);
+                Variable variable = result.parsingResult.getVariableByName(variableName);
+                if(variable==null){
+                    result.errors.add("Неизвестная переменная. Строка "+ currentLineNumber);
+                    return;
+                }
+                Command command = new ImRegMoveCommand(firstOperand.getValue(), variable.address, variable.value > 256);
                 currentSegment.add(currentLineNumber, command);
             }
+            else
+            if (secondOperand.getTokenType() == TokenType.Register) {
+                boolean isWide = AnalyzerUtils.isWideRegister(firstOperand.getValue());
+                Command command = new RegMemRegMoveCommand(firstOperand.getValue(),
+                        secondOperand.getValue(), isWide, ModeType.RegisterAddressing);
+                currentSegment.add(currentLineNumber, command);
+            }
+            else
+            {
+                result.errors.add("Операнды не совпадают. Строка "+currentLineNumber);
+            }
+        }
+        if(line.hasMoreTokens())
+        {
+            result.errors.add("Операнды не совпадают. Строка "+currentLineNumber);
         }
     }
 
@@ -109,7 +127,7 @@ public class Analyzer {
             }
             Token secondOperand = line.nextToken();
 
-            if (secondOperand.getTokenType() == TokenType.IndirectAddress) {
+            if (secondOperand.getTokenType() == TokenType.IndirectAddress && !line.hasMoreTokens()) {
                 boolean isWide = AnalyzerUtils.isWideRegister(firstOperand.getValue());
                 Command command = new RegMemRegisterTestCommand(firstOperand.getValue(),
                         secondOperand.getValue(), isWide, ModeType.RegisterIndirect);
@@ -127,7 +145,11 @@ public class Analyzer {
         }
         Token firstOperand = line.nextToken();
         if (firstOperand.getTokenType() == TokenType.Register) {
-
+            if(line.hasMoreTokens())
+            {
+                result.errors.add("Операнды не совпадают. Строка "+currentLineNumber);
+                return;
+            }
             boolean isWide = AnalyzerUtils.isWideRegister(firstOperand.getValue());
             Command command = new DivCommand(isWide,
                     firstOperand.getValue(), ModeType.RegisterAddressing);
@@ -143,7 +165,7 @@ public class Analyzer {
             result.errors.add("Не хватает операндов!. Строка "+currentLineNumber);
         }
         Token firstOperand = line.nextToken();
-        if (firstOperand.getTokenType() == TokenType.Name) {
+        if (firstOperand.getTokenType() == TokenType.Name && !line.hasMoreTokens()) {
             if (!labels.contains(firstOperand.getValue())) {
                 result.errors.add("Метка не определена. Строка "+currentLineNumber);
             }
@@ -161,7 +183,7 @@ public class Analyzer {
             result.errors.add("Не хватает операндов! Строка "+currentLineNumber);
         }
         Token firstOperand = line.nextToken();
-        if (firstOperand.getTokenType() == TokenType.Number) {
+        if (firstOperand.getTokenType() == TokenType.Number && !line.hasMoreTokens()) {
             Optional<Integer> value = AnalyzerUtils.readDecHex(firstOperand.getValue());
             if (!value.isPresent()) {
                 result.errors.add("Ошибочный операнд! Строка "+currentLineNumber);
