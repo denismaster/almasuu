@@ -1,5 +1,6 @@
 package com.translator.lexer;
 
+import com.translator.semantic.data.Segment;
 import com.translator.semantic.data.Variable;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ public class TokenParsingResult {
     public List<String> labels = new ArrayList<>();
     public List<TokenLine> tokenLines = new ArrayList<>();
     public List<String> segments = new ArrayList<>();
+    public Map<String,Segment> _segments = new HashMap<>();
     public List<String> names = new ArrayList<>();
     public Map<String,Variable> variables = new HashMap<>();
     public List<String> errors = new ArrayList<>();

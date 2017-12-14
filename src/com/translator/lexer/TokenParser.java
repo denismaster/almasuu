@@ -3,6 +3,7 @@ package com.translator.lexer;
 import com.translator.semantic.AnalyzerUtils;
 import com.translator.semantic.commands.OperandType;
 import com.translator.semantic.data.Label;
+import com.translator.semantic.data.Segment;
 import com.translator.semantic.data.Variable;
 
 import java.io.*;
@@ -98,6 +99,10 @@ public class TokenParser {
                         if(number.isPresent()) {
                             Variable put = new Variable(token.getValue(), address, number.get());
                                     result.variables.put(token.getValue(), put);
+                            if(put.type==OperandType.immediate16 && Utils.isDataByteDirective(nextToken))
+                            {
+                                result.errors.add("Тип операндов не совпадают. Строка "+ tokenLine.lineNumber);
+                            }
                             address+=put.type== OperandType.immediate8 ? 1:2;
                         }
                     }
@@ -118,6 +123,42 @@ public class TokenParser {
                 {
                     Token nextToken = tokenLine.getTokens().get(i+1);
                 }
+                if(Utils.isSegmentDirective(token) && i >0)
+                {
+                    Token previousToken = tokenLine.getTokens().get(i-1);
+                    Segment segment = new Segment(previousToken.getValue());
+                    segment.isOpened = true;
+                    segment.token = token;
+                    result._segments.put(segment.name,segment);
+                }
+                if(Utils.isEndsDirective(token) && i >0)
+                {
+                    Token nextToken = tokenLine.getTokens().get(i-1);
+                    Segment segment = result._segments.get(nextToken.getValue());
+                    if(segment!=null)
+                    {
+                        if(segment.isClosed)
+                        {
+                            result.errors.add("Сегмент уже закрыт. Строка" + nextToken.tokenLine.lineNumber);
+                        }
+                        else
+                        {
+                            segment.close();
+                        }
+                    }
+                    else
+                    {
+                        result.errors.add("Сегмент не открыт. Строка" + segment.token.tokenLine.lineNumber);
+                    }
+                }
+            }
+        }
+
+        for(Segment segment: result._segments.values())
+        {
+            if(!segment.isClosed) {
+                result.errors.add("Сегмент не закрыт. Строка" + segment.token.tokenLine.lineNumber);
+                break;
             }
         }
     }

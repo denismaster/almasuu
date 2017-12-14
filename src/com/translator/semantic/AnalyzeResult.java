@@ -54,7 +54,7 @@ public class AnalyzeResult {
             String sourceLine = parsingResult.sourceLines.get(i);
             Command c = codeSegment.commands.get(i+1);
             String code;
-            if(c==null)
+            if(c==null || hasErrors())
                 code = "";
             else
                 code = getHexCode(c);

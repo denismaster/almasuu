@@ -1,8 +1,14 @@
 package com.translator;
 
+import com.translator.lexer.TokenParser;
+import com.translator.semantic.AnalyzeResult;
+import com.translator.semantic.Analyzer;
+import com.translator.writer.Writer;
+
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import javax.swing.JFileChooser;
 
 public class GUIMain extends javax.swing.JFrame implements ActionListener {
@@ -41,21 +47,36 @@ public class GUIMain extends javax.swing.JFrame implements ActionListener {
             log("Не выбран файл.");
             return;
         }
-        /*Assembler asm = null;
-        try {
-            asm = new Assembler(filename);
-            asm.translate();
-        } catch (FileNotFoundException e) {
-            log("Файл не найден.");
-        } catch (Exception e) {
-            log("Непредвиденная ошибка: " + e.getMessage());
+        File f = new File(filename);
+        if (!f.exists() || f.isDirectory()) {
+            log("Некорректное имя файла. Работа транслятора будет завершена");
+            return;
         }
-        log("Создан файл листинга.");
-        if (!asm.has_error)
-            log("Создан файл объектного кода.");
-        else
-            log("Имеются ошибки в исходном коде.");*/
-        log("Операция завершена.");
+
+        try {
+            log("Парсинг входного файла...");
+            TokenParser parser = new TokenParser();
+
+            log("Семантический анализ...");
+            Analyzer analyzer = new Analyzer();
+            AnalyzeResult result = analyzer.analyze(parser.parse(filename));
+
+            if(result.hasErrors())
+            {
+                log("Ошибки в ходе семантического анализа.");
+            }
+
+            log("Генерация листинга и объектного кода");
+            Writer writer = new Writer();
+            writer.generateOutputFiles(filename,result);
+        } catch (Exception ex)
+        {
+            log("Возникла ошибка в результате трансляции:");
+            ex.printStackTrace();
+        }
+        finally {
+            log("Трансляция завершена.");
+        }
     }
 
     protected void log(String msg) {
