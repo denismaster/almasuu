@@ -51,7 +51,4 @@ public class DataSegment extends Segment implements CodeGeneratable {
         return null;
     }
 
-    public Boolean hasEndpointDeclaration(){
-        return declarations.values().stream().anyMatch(decl->decl instanceof MountPointDeclaration);
-    }
 }

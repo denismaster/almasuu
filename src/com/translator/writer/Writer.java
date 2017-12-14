@@ -18,8 +18,9 @@ public class Writer {
         String outputListingFile = fileNameWithOutExt+".lst";
         String outputObjFile = fileNameWithOutExt+".obj";
 
-        writeStringToFile(outputObjFile, analyzeResult.codeSegment.generateCode());
         writeStringToFile(outputListingFile, generateListing(analyzeResult));
+        if(!analyzeResult.hasErrors())
+            writeStringToFile(outputObjFile, analyzeResult.getObjectCode());
     }
 
     private String generateListing(AnalyzeResult analyzeResult){
