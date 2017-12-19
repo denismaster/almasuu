@@ -91,13 +91,13 @@ public class Compiler {
     }
 
     public void translate() throws IOException {
-        firstScan();
-        secondScan();
+        analyzeSources();
+        generateCode();
         writeObjectCode();
-        writeAssemblingLog();
+        writeListingFile();
     }
 
-    private void firstScan() throws IOException {
+    private void analyzeSources() throws IOException {
         Scanner scanner = new Scanner(new File(nameOfAssemblingFile));
         while (scanner.hasNextLine()) {
             lineNumber++;
@@ -114,7 +114,7 @@ public class Compiler {
         scanner.close();
     }
 
-    private void secondScan() throws IOException {
+    private void generateCode() throws IOException {
         objectCode.add(new Card(0));
         Scanner scanner = new Scanner(new File(nameOfAssemblingFile));
         currentAddress = lineNumber = 0;
@@ -302,10 +302,14 @@ public class Compiler {
         }
     }
 
-    private void writeAssemblingLog() throws IOException {
+    private void writeListingFile() throws IOException {
         PrintWriter writer = null;
         try {
-            writer = new PrintWriter(changeExtension(nameOfAssemblingFile, ".log"));
+            writer = new PrintWriter(changeExtension(nameOfAssemblingFile, ".lst"));
+            writer.println("almasuu - А. Рябцева (с) 2017");
+            writer.println("Листинг трансляции\n");
+
+            writer.println(String.format("%5s %s \t  %14s \t %s","№","Адрес","Код","Исходный код"));
             for (String data : error)
                 writer.println(data);
             for (String data : assemblingLog)

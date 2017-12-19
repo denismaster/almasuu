@@ -3,6 +3,7 @@ package com.translator;
 import com.translator.lexer.TokenParser;
 import com.translator.semantic.AnalyzeResult;
 import com.translator.semantic.Analyzer;
+import com.translator.semantic.Compiler;
 import com.translator.writer.Writer;
 
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -55,20 +56,9 @@ public class GUIMain extends javax.swing.JFrame implements ActionListener {
 
         try {
             log("Парсинг входного файла...");
-            TokenParser parser = new TokenParser();
-
             log("Семантический анализ...");
-            Analyzer analyzer = new Analyzer();
-            AnalyzeResult result = analyzer.analyze(parser.parse(filename));
-
-            if(result.hasErrors())
-            {
-                log("Ошибки в ходе семантического анализа.");
-            }
-
-            log("Генерация листинга и объектного кода");
-            Writer writer = new Writer();
-            writer.generateOutputFiles(filename,result);
+            Compiler compiler = new Compiler(filename);
+            compiler.translate();
         } catch (Exception ex)
         {
             log("Возникла ошибка в результате трансляции:");
