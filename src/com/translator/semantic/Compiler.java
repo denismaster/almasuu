@@ -10,7 +10,7 @@ public class Compiler {
     }
 
     enum OperandType {
-        no, r8, i8, r16, m16, i16, d8
+        no, r8, i8, r16, m16, i16, d8, od8
     }
 
     private String nameOfAssemblingFile;
@@ -40,10 +40,10 @@ public class Compiler {
             add("mov", OperandType.r8,  OperandType.i8,  4, 0xC6, 0xC0, 0x00);
             add("mov", OperandType.r16, OperandType.i8,  5, 0xC7, 0xC0, 0x00,0x00);
             add("mov", OperandType.r16, OperandType.i16, 5, 0xC7, 0xC0, 0x00,0x00);
-            //add("mov", OperandType.r16, OperandType.d8,  7, 0x8B, 0x04, 0x00,0x00);
-           // add("mov", OperandType.r8, OperandType.d8,  7, 0x8A, 0x04, 0x00,0x00);
+            add("mov", OperandType.r16, OperandType.d8,  10, 0x8B, 0x06, 0x00,0x00);
+            add("mov", OperandType.r8, OperandType.d8,  10, 0x8A, 0x06, 0x00,0x00);
             add("mov", OperandType.r16, OperandType.m16, 7, 0x8B, 0x38);
-
+            add("mov", OperandType.r16, OperandType.od8,  11, 0xB8, 0x00,0x00);
             add("div" , OperandType.r8  , OperandType.no , 1, 0xF6, 0xF0);
             add("div" , OperandType.r16 , OperandType.no, 1, 0xF7, 0xF0);
 
@@ -234,7 +234,15 @@ public class Compiler {
                 Label symbol = symbolTable.get(op.ident);
                 if (symbol == null)
                     return ErrorEnumeration.UndefinedSymbol;
-                op.value = symbol.adres - currentAddress;
+                op.aux = 100+symbol.address;// - currentAddress;
+                op.value = 100+symbol.address;//  - currentAddress;
+                break;
+            case od8:
+                Label symb = symbolTable.get(op.ident);
+                if (symb == null)
+                    return ErrorEnumeration.UndefinedSymbol;
+                op.aux = 100+symb.address;// - currentAddress;
+                op.value = 100+symb.address;//  - currentAddress;
                 break;
         }
         return ErrorEnumeration.Success;
@@ -372,13 +380,13 @@ public class Compiler {
                 break;
             case 2:
                 code[1] |= op2 << 3 | op1;
-                code[2]=operand1.aux & 0xFF;
-                code[3]=operand1.aux >> 8;
+                code[2] = operand1.aux & 0xFF;
+                code[3] = operand1.aux >> 8;
                 break;
             case 3:
                 code[1] |= op1 << 3 | op2;
-                code[2]=operand2.aux & 0xFF;
-                code[3]=operand2.aux >> 8;
+                code[2] = operand2.aux & 0xFF;
+                code[3] = operand2.aux >> 8;
                 break;
             case 4:
                 code[1] |= op1;
@@ -398,6 +406,21 @@ public class Compiler {
             case 8:
                 code[1] = op1;
                 break;
+            case 10:
+            {
+                code[1] |= op1;
+                code[2] = operand2.aux & 0xFF;
+                code[3] = operand2.aux >> 8;
+                break;
+            }
+            case 11:
+            {
+                code[0] |= op1;
+                operand2.aux+=segment.entry;
+                code[1] = operand2.aux & 0xFF;
+                code[2] = operand2.aux >> 8;
+                break;
+            }
         }
         ArrayList<Byte> data = new ArrayList<Byte>();
         for (int i = 0; i < code.length; i++)
@@ -474,6 +497,7 @@ public class Compiler {
     }
 
     private void parseOperands(Stack<String> stack, ParsedLine pLine) {
+        Boolean offset = false;
         while (!stack.isEmpty()) {
             String[] operands = stack.pop().split(",");
             for (String ident : operands) {
@@ -482,7 +506,9 @@ public class Compiler {
                     op = new Operand(ident, registers.get(ident).type);
                 else if (ident.startsWith("["))
                     op = new Operand(ident, OperandType.m16);
-                else if (isIntermediate(ident)) {
+                else if( ident.equalsIgnoreCase("offset")) {
+                    offset = true; continue;
+                } else if (isIntermediate(ident)) {
                     String numPart;
                     int value;
                     if(ident.endsWith("H")||ident.endsWith("h"))
@@ -500,8 +526,13 @@ public class Compiler {
                     else
                         op = new Operand(ident, OperandType.i16);
                     op.value = value;
-                } else
-                    op = new Operand(ident, OperandType.d8);
+                } else {
+                    if(offset) {
+                        op = new Operand(ident, OperandType.od8);
+                        op.isOffset = true;
+                    } else
+                        op = new Operand(ident, OperandType.d8);
+                }
                 pLine.operands.add(op);
             }
         }
@@ -625,11 +656,11 @@ public class Compiler {
 
     private class Label {
         String name;
-        int adres;
+        int address;
         String type;
         Label(String name, int adr, String type) {
             this.name = name;
-            adres = adr;
+            this.address = adr;
             this.type = type;
         }
     }
@@ -643,6 +674,7 @@ public class Compiler {
     private class Operand {
         String ident;
         int value, aux;
+        boolean isOffset;
         OperandType type;
 
         Operand() {
