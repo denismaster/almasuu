@@ -40,14 +40,17 @@ public class Compiler {
             add("mov", OperandType.r8,  OperandType.i8,  4, 0xC6, 0xC0, 0x00);
             add("mov", OperandType.r16, OperandType.i8,  5, 0xC7, 0xC0, 0x00,0x00);
             add("mov", OperandType.r16, OperandType.i16, 5, 0xC7, 0xC0, 0x00,0x00);
+            //add("mov", OperandType.r16, OperandType.d8,  7, 0x8B, 0x04, 0x00,0x00);
+           // add("mov", OperandType.r8, OperandType.d8,  7, 0x8A, 0x04, 0x00,0x00);
+            add("mov", OperandType.r16, OperandType.m16, 7, 0x8B, 0x38);
 
             add("div" , OperandType.r8  , OperandType.no , 1, 0xF6, 0xF0);
             add("div" , OperandType.r16 , OperandType.no, 1, 0xF7, 0xF0);
 
-            add("test",OperandType.r16,  OperandType.m16,  6, 0x84, 0x00);
-            add("test",OperandType.m16, OperandType.r16,  6, 0x85, 0x00);
+            add("test",OperandType.r8,  OperandType.m16,  6, 0x84, 0x00);
+            add("test",OperandType.r16, OperandType.m16,  7, 0x85, 0x00);
 
-            add("jae",  OperandType.d8, OperandType.no,   7, 0x73, 0x00);
+            add("jae",  OperandType.d8, OperandType.no,   6, 0x73, 0x00);
             add("int", OperandType.i8, OperandType.no,   8, 0xCD, 0x00);
         }
     };
@@ -196,14 +199,18 @@ public class Compiler {
             case m16:
                 String line = op.ident.substring(1, op.ident.length() - 1).trim();
                 String index = line.substring(0, 2);
-                if (index.equals("bp"))
+                if(line.length()==2 && index.equalsIgnoreCase("bx"))
+                {
+                    line+="+0";
+                }
+                if (index.equalsIgnoreCase("bp"))
                     op.value = 6;
-                else if (index.equals("bx"))
+                else if (index.equalsIgnoreCase("bx"))
                     op.value = 7;
                 else
                     return ErrorEnumeration.NotMatchOperand;
                 try {
-                    op.aux = Integer.parseInt(line.substring(3));
+                    op.aux = Integer.parseInt(line.substring(2));
                 } catch (Exception e) {
                     return ErrorEnumeration.NotMatchOperand;
                 }
@@ -308,10 +315,9 @@ public class Compiler {
             writer = new PrintWriter(changeExtension(nameOfAssemblingFile, ".lst"));
             writer.println("almasuu - А. Рябцева (с) 2017");
             writer.println("Листинг трансляции\n");
-
-            writer.println(String.format("%5s %s \t  %14s \t %s","№","Адрес","Код","Исходный код"));
             for (String data : error)
                 writer.println(data);
+            writer.println(String.format("%5s %s \t  %14s \t %s","№","Адрес","Код","Исходный код"));
             for (String data : assemblingLog)
                 writer.println(data);
             writer.println();
@@ -387,7 +393,7 @@ public class Compiler {
                 code[1] |= op1;
                 break;
             case 7:
-                code[1] = op1;
+                code[1] |= op2;
                 break;
             case 8:
                 code[1] = op1;
@@ -477,7 +483,18 @@ public class Compiler {
                 else if (ident.startsWith("["))
                     op = new Operand(ident, OperandType.m16);
                 else if (isIntermediate(ident)) {
-                    int value = Integer.parseInt(ident);
+                    String numPart;
+                    int value;
+                    if(ident.endsWith("H")||ident.endsWith("h"))
+                    {
+                        numPart = ident.substring(0,ident.length()-1);
+                        value = Integer.parseInt(numPart,16);
+                    }
+                    else
+                    {
+                        numPart = ident;
+                        value = Integer.parseInt(numPart);
+                    }
                     if (Math.abs(value) < 256)
                         op = new Operand(ident, OperandType.i8);
                     else
@@ -516,7 +533,17 @@ public class Compiler {
 
     private boolean isIntermediate(String ident) {
         try {
-            Integer.parseInt(ident);
+            String numPart;
+            if(ident.endsWith("H")||ident.endsWith("h"))
+            {
+                numPart = ident.substring(0,ident.length()-1);
+                Integer.parseInt(numPart,16);
+            }
+            else
+            {
+                numPart = ident;
+                Integer.parseInt(numPart);
+            }
             return true;
         } catch (NumberFormatException e) {
             return false;
