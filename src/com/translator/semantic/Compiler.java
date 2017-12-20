@@ -37,7 +37,7 @@ public class Compiler {
             add("mov", OperandType.m16, OperandType.r16, 2, 0x89, 0x80, 0x00, 0x00);
             add("mov", OperandType.r8,  OperandType.m16, 3, 0x8A, 0x80, 0x00, 0x00);
             add("mov", OperandType.r16, OperandType.m16, 3, 0x8B, 0x80, 0x00, 0x00);
-            add("mov", OperandType.r8,  OperandType.i8,  4, 0xC6, 0xC0, 0x00);
+            add("mov", OperandType.r8,  OperandType.i8,  4, 0xB0, 0x00);
             add("mov", OperandType.r16, OperandType.i8,  5, 0xC7, 0xC0, 0x00,0x00);
             add("mov", OperandType.r16, OperandType.i16, 5, 0xC7, 0xC0, 0x00,0x00);
             add("mov", OperandType.r16, OperandType.d8,  10, 0x8B, 0x06, 0x00,0x00);
@@ -389,8 +389,8 @@ public class Compiler {
                 code[3] = operand2.aux >> 8;
                 break;
             case 4:
-                code[1] |= op1;
-                code[2] = op2 & 0xFF;
+                code[0] |= op1;
+                code[1] = op2 & 0xFF;
                 break;
             case 5:
                 code[1] |= op1;
